@@ -1,8 +1,14 @@
-import {describe, it, expect, vi, beforeAll, afterAll} from 'vitest';
+import {describe, it, expect, vi} from 'vitest';
 import {mount} from '@vue/test-utils';
 import {h, nextTick} from 'vue';
 import ViewList from '@/components/ViewList.vue';
 import type {ViewListExpose} from '@/type/ListExpose.ts';
+
+vi.mock('clipboard-polyfill', async () => {
+    return {
+        writeText: vi.fn().mockResolvedValue(undefined),
+    };
+});
 
 type TestItem = {
     id: string;
@@ -356,21 +362,6 @@ describe('ViewList 组件', () => {
     });
 
     describe('beforeCopy 和 afterCopy 回调', () => {
-        beforeAll(() => {
-            // Mock clipboard module
-            vi.mock('clipboard-polyfill', async (importOriginal) => {
-                const actual = await importOriginal<any>();
-                return {
-                    ...actual,
-                    writeText: vi.fn().mockResolvedValue(undefined),
-                };
-            });
-        });
-
-        afterAll(() => {
-            vi.restoreAllMocks();
-        });
-
         it('应该在复制前调用 beforeCopy', async () => {
             const beforeCopySpy = vi.fn();
             const items = createTestItems(2);
