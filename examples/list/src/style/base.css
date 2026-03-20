@@ -4,12 +4,32 @@
     box-sizing: border-box;
 }
 
+html,
+body,
+#app {
+    height: 100%;
+    width: 100%;
+}
+
 :root {
-    background-color: #fff;
+    --text-color: #555;
+    --line-color: #ddd;
+    --active-color: #89bdf4;
+
+    --bg-color: #fff;
+    --bg-color--lighter: #eee;
+
+    background-color: var(--bg-color);
+    color: var(--text-color);
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
-        background-color: #333;
+        --text-color: #ddd;
+        --line-color: #555;
+        --active-color: #4889cc;
+
+        --bg-color: #333;
+        --bg-color--lighter: #444;
     }
 }

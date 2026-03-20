@@ -1,0 +1,50 @@
+.page {
+    padding: 1rem;
+}
+
+.title {
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--line-color);
+    padding: 0.5rem 0;
+}
+
+.example-view {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--line-color);
+    border-radius: 0.5rem;
+}
+
+.description {
+    margin-bottom: 1rem;
+    font-size: 0.8rem;
+}
+
+.description p {
+    margin-bottom: 0.5rem;
+}
+
+.description table {
+    border-collapse: collapse;
+}
+
+.description table th,
+.description table td {
+    border: 1px solid var(--bg-color--lighter);
+    padding: 0.4rem;
+}
+
+.description table th:hover,
+.description table td:hover {
+    outline: 1px solid var(--line-color);
+    background-color: var(--bg-color--lighter);
+}
+
+.copy-test-textarea {
+    display: block;
+    resize: none;
+    height: 4rem;
+    width: 100%;
+    color: var(--text-color);
+    background-color: var(--bg-color--lighter);
+}

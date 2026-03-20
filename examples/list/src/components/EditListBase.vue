@@ -32,25 +32,131 @@ const defaultEditListData = (): EditListItem => ({
     name: `New Member - ${nextId.value++}`,
     age: 18,
 });
+
+const handleCopied = (data: EditListItem[]) => {
+    alert(`复制了 ${data.map((it) => it.name).join(',')}`);
+};
+
+const validateJson = (json: any) => {
+    if (typeof json !== 'object') {
+        return false;
+    }
+    if (!json.id || !json.name || !json.age) {
+        return false;
+    }
+    return !(
+        typeof json.id !== 'string' ||
+        typeof json.name !== 'string' ||
+        typeof json.age !== 'number'
+    );
+};
+
+const beforePaste = (items: EditListItem[]) => {
+    alert('粘贴前数据的id将被覆写');
+    for (const item of items) {
+        item.id = `${nextId.value++}`;
+    }
+};
+
+const handlePasted = (data: EditListItem[]) => {
+    alert(`粘贴了 ${data.map((it) => it.name).join(',')}`);
+};
 </script>
 
 <template>
-    <div>
-        <EditList
-            :lines="editListData"
-            :to-key="(item) => item.id"
-            :default-line="defaultEditListData"
-        >
-            <template #head>
-                <h1>EditList Example</h1>
-            </template>
-            <template #line="{item}">
-                <div>
-                    <div>id: {{ item.id }}</div>
-                    <div>name: {{ item.name }}</div>
-                    <div>age: {{ item.age }}</div>
-                </div>
-            </template>
-        </EditList>
+    <div class="page">
+        <h2 class="title">EditList</h2>
+
+        <div class="example-view">
+            <EditList
+                :lines="editListData"
+                :to-key="(item) => item.id"
+                :default-line="defaultEditListData"
+                @copied="handleCopied"
+                :jsonValidator="validateJson"
+                :before-paste="beforePaste"
+                @pasted="handlePasted"
+            >
+                <template #line="{item}">
+                    <div class="line-item">
+                        <span>ID: {{ item.id }}</span>
+                        <span>姓名: {{ item.name }}</span>
+                        <span>年龄: {{ item.age }}</span>
+                    </div>
+                </template>
+            </EditList>
+        </div>
+
+        <div class="description">
+            <p>EditList 是一个可编辑列表组件，支持增删改查、键盘导航、剪贴板操作等功能。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>操作</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>点击</td>
+                        <td>选中单项</td>
+                    </tr>
+                    <tr>
+                        <td>↑/↓</td>
+                        <td>移动当前项</td>
+                    </tr>
+                    <tr>
+                        <td>Ctrl/Cmd + 点击</td>
+                        <td>选中多项</td>
+                    </tr>
+                    <tr>
+                        <td>Ctrl/Cmd + A</td>
+                        <td>全选</td>
+                    </tr>
+                    <tr>
+                        <td>Shift + ↑/↓</td>
+                        <td>调整扩展选项</td>
+                    </tr>
+                    <tr>
+                        <td>Enter</td>
+                        <td>在当前位置插入新项</td>
+                    </tr>
+                    <tr>
+                        <td>Delete/Backspace</td>
+                        <td>删除选中项</td>
+                    </tr>
+                    <tr>
+                        <td>Ctrl/Cmd + C</td>
+                        <td>复制选中项</td>
+                    </tr>
+                    <tr>
+                        <td>Ctrl/Cmd + X</td>
+                        <td>剪切选中项</td>
+                    </tr>
+                    <tr>
+                        <td>Ctrl/Cmd + V</td>
+                        <td>粘贴项目（将从文本转化，需要经过校验）</td>
+                    </tr>
+                    <tr>
+                        <td>Ctrl/Cmd + ↑/↓</td>
+                        <td>上下移动选中项</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <textarea
+            class="copy-test-textarea"
+            placeholder="可以在这里粘贴复制到的内容"
+        />
     </div>
 </template>
+
+<style scoped>
+@import '../style/example-page.css';
+
+.line-item {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+}
+</style>

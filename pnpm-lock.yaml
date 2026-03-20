@@ -43,7 +43,7 @@ importers:
         specifier: ^3.2.6
         version: 3.2.6(typescript@5.9.3)
 
-  examples/base-example:
+  examples/list:
     dependencies:
       '@potmot/list':
         specifier: workspace:*

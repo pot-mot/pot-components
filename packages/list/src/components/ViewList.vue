@@ -14,7 +14,6 @@ const props = withDefaults(
         toKey: (line: T, index: number) => string;
         interactiveClassNames?: string[];
         beforeCopy?: (data: T[]) => void;
-        afterCopy?: () => void;
     }>(),
     {
         interactiveClassNames: () => [],
@@ -26,6 +25,7 @@ const emits = defineEmits<{
     clickOutside: [e: MouseEvent];
     selected: [item: T, index: number];
     unselected: [item: T, index: number];
+    copied: [items: T[]];
 }>();
 
 const listRef = useTemplateRef<HTMLDivElement>('listRef');
@@ -185,7 +185,7 @@ const handleKeyboardEvent = async (e: KeyboardEvent) => {
             const copyData = cloneDeep(toRaw(selectedItems));
             props.beforeCopy?.(copyData);
             await writeText(JSON.stringify(copyData));
-            props.afterCopy?.();
+            emits('copied', copyData);
         }
     }
 };

@@ -20,9 +20,7 @@ const props = withDefaults(
         defaultLine: () => T | Promise<T>;
         interactiveClassNames?: string[];
         beforeCopy?: (data: T[]) => void;
-        afterCopy?: () => void;
         beforePaste?: (data: T[]) => void;
-        afterPaste?: () => void;
         jsonValidator?: (json: any, onError: ErrorHandler) => boolean | Promise<T>;
     }>(),
     {
@@ -35,6 +33,8 @@ const emits = defineEmits<{
     clickOutside: [e: MouseEvent];
     selected: [item: T, index: number];
     unselected: [item: T, index: number];
+    copied: [items: T[]];
+    pasted: [items: T[]];
     added: [added: T[]];
     deleted: [deleted: T[]];
     pasteError: [error: Map<number, Error[] | null | undefined> | any];
@@ -112,19 +112,15 @@ const handlePaste = async () => {
 
         const validateErrorsMap = new Map<number, Error[] | null | undefined>();
 
+        const pasteData = Array.isArray(value) ? value : [value];
         if (
-            Array.isArray(value) &&
-            value.filter((item, index) => {
+            pasteData.filter((item, index) => {
                 return jsonValidator(item, (e) => validateErrorsMap.set(index, e));
             }).length === value.length
         ) {
-            props.beforePaste?.(value);
-            tempLines.splice(insertIndex, 0, ...value);
-            insertLength = value.length;
-        } else if (jsonValidator(value, (e) => validateErrorsMap.set(0, e))) {
-            props.beforePaste?.([value]);
-            tempLines.splice(insertIndex, 0, value);
-            insertLength = 1;
+            props.beforePaste?.(pasteData);
+            tempLines.splice(insertIndex, 0, ...pasteData);
+            insertLength = pasteData.length;
         } else {
             emits('pasteError', validateErrorsMap);
             return;
@@ -138,7 +134,7 @@ const handlePaste = async () => {
         for (let i = insertIndex; i < insertIndex + insertLength; i++) {
             select(i);
         }
-        props.afterPaste?.();
+        emits('pasted', pasteData);
     } catch (e) {
         emits('pasteError', e);
     }
@@ -379,11 +375,14 @@ const handleKeyboardEvent = async (e: KeyboardEvent) => {
             const copyData = cloneDeep(toRaw(selectedItems));
             props.beforeCopy?.(copyData);
             await writeText(JSON.stringify(copyData));
-            props.afterCopy?.();
+            emits('copied', copyData);
         } else if (e.key === 'x') {
             prepareKeyboardEvent(e);
 
-            await writeText(JSON.stringify(selectedItems));
+            const copyData = cloneDeep(toRaw(selectedItems));
+            props.beforeCopy?.(copyData);
+            await writeText(JSON.stringify(copyData));
+            emits('copied', copyData);
             unselectAll();
             lines.value = unselectedItems;
             emits('deleted', selectedItems);
