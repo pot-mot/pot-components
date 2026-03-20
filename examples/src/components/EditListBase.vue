@@ -103,7 +103,7 @@ const handlePasted = (data: EditListItem[]) => {
                     </tr>
                     <tr>
                         <td>↑/↓</td>
-                        <td>移动当前项</td>
+                        <td>切换当前项</td>
                     </tr>
                     <tr>
                         <td>Ctrl/Cmd + 点击</td>
@@ -115,7 +115,11 @@ const handlePasted = (data: EditListItem[]) => {
                     </tr>
                     <tr>
                         <td>Shift + ↑/↓</td>
-                        <td>调整扩展选项</td>
+                        <td>调整选中范围</td>
+                    </tr>
+                    <tr>
+                        <td>Ctrl/Cmd + ↑/↓</td>
+                        <td>整体移动选中项</td>
                     </tr>
                     <tr>
                         <td>Enter</td>
@@ -136,10 +140,6 @@ const handlePasted = (data: EditListItem[]) => {
                     <tr>
                         <td>Ctrl/Cmd + V</td>
                         <td>粘贴项目（将从文本转化，需要经过校验）</td>
-                    </tr>
-                    <tr>
-                        <td>Ctrl/Cmd + ↑/↓</td>
-                        <td>上下移动选中项</td>
                     </tr>
                 </tbody>
             </table>

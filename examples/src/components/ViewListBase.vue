@@ -67,7 +67,7 @@ const handleCopied = (data: ViewListItem[]) => {
                     </tr>
                     <tr>
                         <td>↑/↓</td>
-                        <td>移动当前项</td>
+                        <td>切换当前项</td>
                     </tr>
                     <tr>
                         <td>Ctrl/Cmd + 点击</td>
@@ -79,7 +79,7 @@ const handleCopied = (data: ViewListItem[]) => {
                     </tr>
                     <tr>
                         <td>Shift + ↑/↓</td>
-                        <td>调整扩展选项</td>
+                        <td>调整选中范围</td>
                     </tr>
                     <tr>
                         <td>Ctrl/Cmd + C</td>
