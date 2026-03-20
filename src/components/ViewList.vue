@@ -5,16 +5,21 @@ import {onBeforeUnmount, onMounted, toRaw, useTemplateRef} from 'vue';
 import '@/style/list-variables.css';
 import {writeText} from 'clipboard-polyfill';
 import {cloneDeep} from 'lodash-es';
-import {isTargetInteractive} from '@/utils/checkInteractive.ts';
+import {isInteractiveElement, isTargetInteractive} from '@/utils/checkInteractive.ts';
 import type {ViewListExpose} from '@/type/ListExpose.ts';
 
-const props = defineProps<{
-    lines: T[];
-    toKey: (line: T, index: number) => string;
-    interactiveClassNames?: string[];
-    beforeCopy?: (data: T[]) => void;
-    afterCopy?: () => void;
-}>();
+const props = withDefaults(
+    defineProps<{
+        lines: T[];
+        toKey: (line: T, index: number) => string;
+        interactiveClassNames?: string[];
+        beforeCopy?: (data: T[]) => void;
+        afterCopy?: () => void;
+    }>(),
+    {
+        interactiveClassNames: () => [],
+    },
+);
 
 const emits = defineEmits<{
     clickItem: [e: MouseEvent, item: T, index: number];
@@ -26,6 +31,11 @@ const emits = defineEmits<{
 const listRef = useTemplateRef<HTMLDivElement>('listRef');
 const bodyRef = useTemplateRef<HTMLDivElement>('bodyRef');
 const focusList = () => {
+    if (
+        document.activeElement &&
+        isInteractiveElement(document.activeElement, props.interactiveClassNames)
+    )
+        return;
     listRef.value?.focus();
 };
 
@@ -123,7 +133,7 @@ const handleItemClick = (e: MouseEvent, item: T, index: number) => {
         }
         selectRange(index, current.value);
     } else {
-        if (!isTargetInteractive(e, props.interactiveClassNames ?? [])) {
+        if (!isTargetInteractive(e, props.interactiveClassNames)) {
             resetSelection([index]);
         }
     }
@@ -136,7 +146,7 @@ const prepareKeyboardEvent = (e: KeyboardEvent) => {
 };
 
 const handleKeyboardEvent = async (e: KeyboardEvent) => {
-    if (isTargetInteractive(e, props.interactiveClassNames ?? [])) {
+    if (isTargetInteractive(e, props.interactiveClassNames)) {
         return;
     }
 
@@ -183,7 +193,6 @@ const handleKeyboardEvent = async (e: KeyboardEvent) => {
 defineExpose<ViewListExpose>({
     listRef,
     bodyRef,
-    focusList,
     indexSelection,
     expandSelectionUpward,
     expandSelectionDownward,

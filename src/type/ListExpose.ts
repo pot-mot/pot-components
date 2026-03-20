@@ -7,7 +7,6 @@ import type {IndexSelection} from '@/type/IndexSelection.ts';
 export interface ViewListExpose {
     listRef: Ref<HTMLDivElement | null>;
     bodyRef: Ref<HTMLDivElement | null>;
-    focusList: () => void;
 
     indexSelection: IndexSelection;
 

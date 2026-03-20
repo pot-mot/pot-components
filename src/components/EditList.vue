@@ -7,23 +7,28 @@ import '@/style/list-variables.css';
 import json5 from 'json5';
 import {readText, writeText} from 'clipboard-polyfill';
 import {cloneDeep} from 'lodash-es';
-import {isTargetInteractive} from '@/utils/checkInteractive.ts';
+import {isInteractiveElement, isTargetInteractive} from '@/utils/checkInteractive.ts';
 import type {EditListExpose} from '@/type/ListExpose.ts';
 import type {ErrorHandler} from '@/type/ErrorHandler.ts';
 
 const lines = defineModel<T[]>('lines', {
     required: true,
 });
-const props = defineProps<{
-    toKey: (line: T, index: number) => string;
-    defaultLine: () => T | Promise<T>;
-    interactiveClassNames?: string[];
-    beforeCopy?: (data: T[]) => void;
-    afterCopy?: () => void;
-    beforePaste?: (data: T[]) => void;
-    afterPaste?: () => void;
-    jsonValidator?: (json: any, onError: ErrorHandler) => boolean | Promise<T>;
-}>();
+const props = withDefaults(
+    defineProps<{
+        toKey: (line: T, index: number) => string;
+        defaultLine: () => T | Promise<T>;
+        interactiveClassNames?: string[];
+        beforeCopy?: (data: T[]) => void;
+        afterCopy?: () => void;
+        beforePaste?: (data: T[]) => void;
+        afterPaste?: () => void;
+        jsonValidator?: (json: any, onError: ErrorHandler) => boolean | Promise<T>;
+    }>(),
+    {
+        interactiveClassNames: () => [],
+    },
+);
 
 const emits = defineEmits<{
     clickItem: [e: MouseEvent, item: T, index: number];
@@ -39,6 +44,11 @@ const listRef = useTemplateRef<HTMLDivElement>('listRef');
 const bodyRef = useTemplateRef<HTMLDivElement>('bodyRef');
 const lastAddButtonRef = useTemplateRef<HTMLButtonElement>('lastAddButtonRef');
 const focusList = () => {
+    if (
+        document.activeElement &&
+        isInteractiveElement(document.activeElement, props.interactiveClassNames)
+    )
+        return;
     listRef.value?.focus();
 };
 
@@ -296,7 +306,7 @@ const handleItemClick = (e: MouseEvent, item: T, index: number) => {
         }
         selectRange(index, current.value);
     } else {
-        if (!isTargetInteractive(e, props.interactiveClassNames ?? [])) {
+        if (!isTargetInteractive(e, props.interactiveClassNames)) {
             resetSelection([index]);
         }
     }
@@ -309,7 +319,7 @@ const prepareKeyboardEvent = (e: KeyboardEvent) => {
 };
 
 const handleKeyboardEvent = async (e: KeyboardEvent) => {
-    if (isTargetInteractive(e, props.interactiveClassNames ?? [])) {
+    if (isTargetInteractive(e, props.interactiveClassNames)) {
         return;
     }
 
@@ -388,7 +398,6 @@ const handleKeyboardEvent = async (e: KeyboardEvent) => {
 defineExpose<EditListExpose<T>>({
     listRef,
     bodyRef,
-    focusList,
     indexSelection,
     expandSelectionUpward,
     expandSelectionDownward,
