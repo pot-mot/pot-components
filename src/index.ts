@@ -1,12 +1,11 @@
-import EditList from '@/components/EditList.vue';
-import ViewList from '@/components/ViewList.vue';
+import EditList from './components/EditList.vue';
+import ViewList from './components/ViewList.vue';
 
 export {useClickOutside} from './utils/useClickOutside';
-export {isInteractiveElement, isTargetInteractive} from './utils/checkInteractive.ts';
+export {isInteractiveElement, isTargetInteractive} from './utils/checkInteractive';
 export {useIndexSelection} from './utils/indexSelection';
 
 export type {IndexSelection} from './type/IndexSelection';
-export type {ViewListProps, EditListProps, ErrorHandler} from './type/ListProps';
-export type {ViewListExpose, EditListExpose} from './type/ListExpose';
+export type {ErrorHandler} from './type/ErrorHandler';
 
 export {EditList, ViewList};

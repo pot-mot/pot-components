@@ -6,12 +6,10 @@
 
 :root {
     background-color: #fff;
-    color: #444;
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
         background-color: #333;
-        color: #eee;
     }
 }

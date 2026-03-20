@@ -1,6 +1,4 @@
 <script setup lang="ts" generic="T">
-import type {ViewListProps} from '@/type/ListProps.ts';
-import type {ViewListEmits} from '@/type/ListEmits.ts';
 import {useIndexSelection} from '@/utils/indexSelection.ts';
 import {useClickOutside} from '@/utils/useClickOutside.ts';
 import {onBeforeUnmount, onMounted, toRaw, useTemplateRef} from 'vue';
@@ -10,9 +8,20 @@ import {cloneDeep} from 'lodash-es';
 import {isTargetInteractive} from '@/utils/checkInteractive.ts';
 import type {ViewListExpose} from '@/type/ListExpose.ts';
 
-const props = defineProps<ViewListProps<T>>();
+const props = defineProps<{
+    lines: T[];
+    toKey: (line: T, index: number) => string;
+    interactiveClassNames?: string[];
+    beforeCopy?: (data: T[]) => void;
+    afterCopy?: () => void;
+}>();
 
-const emits = defineEmits<ViewListEmits<T>>();
+const emits = defineEmits<{
+    clickItem: [e: MouseEvent, item: T, index: number];
+    clickOutside: [e: MouseEvent];
+    selected: [item: T, index: number];
+    unselected: [item: T, index: number];
+}>();
 
 const listRef = useTemplateRef<HTMLDivElement>('listRef');
 const bodyRef = useTemplateRef<HTMLDivElement>('bodyRef');
@@ -42,7 +51,8 @@ onBeforeUnmount(() => {
 });
 
 const {
-    lastSelect,
+    current,
+    setCurrent,
     selectedSet,
     isSelected,
     select,
@@ -50,11 +60,47 @@ const {
     unselect,
     unselectAll,
     resetSelection,
+    resetSelectionRange,
 } = indexSelection;
 useClickOutside(
     () => bodyRef.value,
-    () => unselectAll(),
+    (e) => {
+        unselectAll();
+        emits('clickOutside', e);
+    },
 );
+
+// 向上扩充选中区间
+const expandSelectionUpward = () => {
+    if (current.value === undefined) return;
+    if (selectedSet.value.size <= 0) return;
+
+    const oldCurrent = current.value;
+    const minIndex = Math.min(...selectedSet.value);
+    const maxIndex = Math.max(...selectedSet.value);
+    if (minIndex === oldCurrent) {
+        if (maxIndex - 1 >= 0) resetSelectionRange(minIndex, maxIndex - 1);
+    } else if (maxIndex === oldCurrent) {
+        if (minIndex - 1 >= 0) resetSelectionRange(minIndex - 1, maxIndex);
+    }
+    setCurrent(oldCurrent);
+};
+
+// 向下扩充选中区间
+const expandSelectionDownward = () => {
+    if (current.value === undefined) return;
+    if (selectedSet.value.size <= 0) return;
+
+    const oldCurrent = current.value;
+    const minIndex = Math.min(...selectedSet.value);
+    const maxIndex = Math.max(...selectedSet.value);
+    if (minIndex === oldCurrent) {
+        if (maxIndex + 1 < props.lines.length) resetSelectionRange(minIndex, maxIndex + 1);
+    } else if (maxIndex === oldCurrent) {
+        if (minIndex + 1 < props.lines.length) resetSelectionRange(minIndex + 1, maxIndex);
+    }
+    setCurrent(oldCurrent);
+};
 
 const handleItemClick = (e: MouseEvent, item: T, index: number) => {
     emits('clickItem', e, item, index);
@@ -70,16 +116,23 @@ const handleItemClick = (e: MouseEvent, item: T, index: number) => {
         }
     } else if (e.shiftKey) {
         e.preventDefault();
-        if (lastSelect.value == undefined) {
+        window.getSelection()?.removeAllRanges();
+        if (current.value == undefined) {
             select(index);
             return;
         }
-        selectRange(index, lastSelect.value);
+        selectRange(index, current.value);
     } else {
         if (!isTargetInteractive(e, props.interactiveClassNames ?? [])) {
             resetSelection([index]);
         }
     }
+};
+
+const prepareKeyboardEvent = (e: KeyboardEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
 };
 
 const handleKeyboardEvent = async (e: KeyboardEvent) => {
@@ -95,65 +148,34 @@ const handleKeyboardEvent = async (e: KeyboardEvent) => {
         }
     }
 
-    if (e.ctrlKey || e.metaKey) {
+    if (e.key === 'ArrowUp') {
+        prepareKeyboardEvent(e);
+
+        if (e.shiftKey) {
+            expandSelectionUpward();
+        } else if (current.value !== undefined && current.value - 1 >= 0) {
+            resetSelection([current.value - 1]);
+        }
+    } else if (e.key === 'ArrowDown') {
+        prepareKeyboardEvent(e);
+
+        if (e.shiftKey) {
+            expandSelectionDownward();
+        } else if (current.value !== undefined && current.value + 1 < props.lines.length) {
+            resetSelection([current.value + 1]);
+        }
+    } else if (e.ctrlKey || e.metaKey) {
         if (e.key === 'a') {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
+            prepareKeyboardEvent(e);
+
             resetSelection(Array.from(props.lines.keys()));
         } else if (e.key === 'c') {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
+            prepareKeyboardEvent(e);
 
             const copyData = cloneDeep(toRaw(selectedItems));
             props.beforeCopy?.(copyData);
             await writeText(JSON.stringify(copyData));
             props.afterCopy?.();
-        }
-    } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-
-        if (e.shiftKey) {
-            if (selectedSet.value.size > 0 && lastSelect.value !== undefined) {
-                const minIndex = Math.min(...selectedSet.value);
-                const maxIndex = Math.max(...selectedSet.value);
-                if (minIndex === lastSelect.value) {
-                    if (maxIndex - 1 >= 0) {
-                        unselect(maxIndex);
-                    }
-                } else if (maxIndex === lastSelect.value) {
-                    if (minIndex - 1 >= 0) {
-                        select(minIndex - 1);
-                    }
-                }
-            }
-        } else if (lastSelect.value !== undefined && lastSelect.value - 1 >= 0) {
-            resetSelection([lastSelect.value - 1]);
-        }
-    } else if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-
-        if (e.shiftKey) {
-            if (selectedSet.value.size > 0 && lastSelect.value !== undefined) {
-                const minIndex = Math.min(...selectedSet.value);
-                const maxIndex = Math.max(...selectedSet.value);
-                if (minIndex === lastSelect.value) {
-                    if (maxIndex + 1 < props.lines.length) {
-                        select(maxIndex + 1);
-                    }
-                } else if (maxIndex === lastSelect.value) {
-                    if (minIndex + 1 < props.lines.length) {
-                        unselect(minIndex);
-                    }
-                }
-            }
-        } else if (lastSelect.value !== undefined && lastSelect.value + 1 < props.lines.length) {
-            resetSelection([lastSelect.value + 1]);
         }
     }
 };
@@ -161,7 +183,10 @@ const handleKeyboardEvent = async (e: KeyboardEvent) => {
 defineExpose<ViewListExpose>({
     listRef,
     bodyRef,
+    focusList,
     indexSelection,
+    expandSelectionUpward,
+    expandSelectionDownward,
 });
 </script>
 
@@ -205,16 +230,17 @@ defineExpose<ViewListExpose>({
 </template>
 
 <style scoped>
-.view-list > .view-list-body > .line-wrapper {
-    background-color: var(--list-line-bg-color);
+.view-list {
+    color: var(--potmot-list--text-color);
+    background-color: var(--potmot-list--bg-color);
 }
 
 .view-list > .view-list-body > .line-wrapper:hover {
-    background-color: var(--list-line-hover-bg-color);
+    background-color: var(--potmot-list--bg-color--hover);
 }
 
 .view-list > .view-list-body > .line-wrapper.selected {
-    background-color: var(--list-line-selected-bg-color);
+    background-color: var(--potmot-list--bg-color--selected);
 }
 
 .view-list:focus {

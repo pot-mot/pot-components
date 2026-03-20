@@ -1,29 +1,30 @@
 import {vitest, describe, it, expect, beforeEach} from 'vitest';
 import {useIndexSelection} from '@/utils/indexSelection';
 import {isReadonly} from 'vue';
+import type {IndexSelection} from '@/type/IndexSelection.ts';
 
 describe('useIndexSelection', () => {
-    let indexSelection: ReturnType<typeof useIndexSelection>;
+    let indexSelection: IndexSelection;
 
     beforeEach(() => {
         indexSelection = useIndexSelection();
     });
 
     describe('select', () => {
-        it('应该选中单个索引', () => {
+        it('选中单个索引', () => {
             indexSelection.select(5);
 
             expect(indexSelection.isSelected(5)).toBe(true);
-            expect(indexSelection.lastSelect.value).toBe(5);
+            expect(indexSelection.current.value).toBe(5);
         });
 
-        it('应该选中多个索引', () => {
+        it('选中多个索引', () => {
             indexSelection.select([1, 2, 3]);
 
             expect(indexSelection.isSelected(1)).toBe(true);
             expect(indexSelection.isSelected(2)).toBe(true);
             expect(indexSelection.isSelected(3)).toBe(true);
-            expect(indexSelection.lastSelect.value).toBe(3);
+            expect(indexSelection.current.value).toBe(3);
         });
 
         it('重复选中同一索引不应重复添加', () => {
@@ -39,7 +40,7 @@ describe('useIndexSelection', () => {
     });
 
     describe('unselect', () => {
-        it('应该取消选中单个索引', () => {
+        it('取消选中单个索引', () => {
             indexSelection.select([1, 2, 3]);
             indexSelection.unselect(2);
 
@@ -48,7 +49,7 @@ describe('useIndexSelection', () => {
             expect(indexSelection.isSelected(3)).toBe(true);
         });
 
-        it('应该取消选中多个索引', () => {
+        it('取消选中多个索引', () => {
             indexSelection.select([1, 2, 3, 4]);
             indexSelection.unselect([2, 3]);
 
@@ -58,12 +59,12 @@ describe('useIndexSelection', () => {
             expect(indexSelection.isSelected(4)).toBe(true);
         });
 
-        it('取消选中 lastSelect 应该将其设为 undefined', () => {
+        it('取消选中 current 将其设为 undefined', () => {
             indexSelection.select([1, 2, 3]);
-            expect(indexSelection.lastSelect.value).toBe(3);
+            expect(indexSelection.current.value).toBe(3);
 
             indexSelection.unselect(3);
-            expect(indexSelection.lastSelect.value).toBeUndefined();
+            expect(indexSelection.current.value).toBeUndefined();
         });
 
         it('取消未选中的索引不应报错', () => {
@@ -72,7 +73,7 @@ describe('useIndexSelection', () => {
     });
 
     describe('selectRange', () => {
-        it('应该选中范围内的所有索引（从小到大）', () => {
+        it('选中范围内的所有索引（从小到大）', () => {
             indexSelection.selectRange(2, 5);
 
             expect(indexSelection.isSelected(2)).toBe(true);
@@ -83,7 +84,7 @@ describe('useIndexSelection', () => {
             expect(indexSelection.isSelected(6)).toBe(false);
         });
 
-        it('应该选中范围内的所有索引（从大到小）', () => {
+        it('选中范围内的所有索引（从大到小）', () => {
             indexSelection.selectRange(5, 2);
 
             expect(indexSelection.isSelected(2)).toBe(true);
@@ -92,7 +93,7 @@ describe('useIndexSelection', () => {
             expect(indexSelection.isSelected(5)).toBe(true);
         });
 
-        it('应该处理单个索引的范围', () => {
+        it('处理单个索引的范围', () => {
             indexSelection.selectRange(3, 3);
 
             expect(indexSelection.isSelected(3)).toBe(true);
@@ -101,7 +102,7 @@ describe('useIndexSelection', () => {
     });
 
     describe('unselectRange', () => {
-        it('应该取消范围内选中的所有索引（从小到大）', () => {
+        it('取消范围内选中的所有索引（从小到大）', () => {
             indexSelection.select([1, 2, 3, 4, 5]);
             indexSelection.unselectRange(2, 4);
 
@@ -112,7 +113,7 @@ describe('useIndexSelection', () => {
             expect(indexSelection.isSelected(5)).toBe(true);
         });
 
-        it('应该取消范围内选中的所有索引（从大到小）', () => {
+        it('取消范围内选中的所有索引（从大到小）', () => {
             indexSelection.select([1, 2, 3, 4, 5]);
             indexSelection.unselectRange(4, 2);
 
@@ -129,7 +130,7 @@ describe('useIndexSelection', () => {
     });
 
     describe('unselectAll', () => {
-        it('应该取消所有选中的索引', () => {
+        it('取消所有选中的索引', () => {
             indexSelection.select([1, 2, 3]);
             indexSelection.unselectAll();
 
@@ -137,7 +138,7 @@ describe('useIndexSelection', () => {
             expect(indexSelection.isSelected(1)).toBe(false);
             expect(indexSelection.isSelected(2)).toBe(false);
             expect(indexSelection.isSelected(3)).toBe(false);
-            expect(indexSelection.lastSelect.value).toBeUndefined();
+            expect(indexSelection.current.value).toBeUndefined();
         });
 
         it('在空选择上调用不应报错', () => {
@@ -146,7 +147,7 @@ describe('useIndexSelection', () => {
     });
 
     describe('resetSelection', () => {
-        it('应该重置为新的索引集合', () => {
+        it('重置为新的索引集合', () => {
             indexSelection.select([1, 2, 3]);
             indexSelection.resetSelection([4, 5, 6]);
 
@@ -156,25 +157,25 @@ describe('useIndexSelection', () => {
             expect(indexSelection.isSelected(4)).toBe(true);
             expect(indexSelection.isSelected(5)).toBe(true);
             expect(indexSelection.isSelected(6)).toBe(true);
-            expect(indexSelection.lastSelect.value).toBe(6);
+            expect(indexSelection.current.value).toBe(6);
         });
 
-        it('应该处理空数组', () => {
+        it('处理空数组', () => {
             indexSelection.select([1, 2, 3]);
             indexSelection.resetSelection([]);
 
             expect(indexSelection.selectedSet.value.size).toBe(0);
-            expect(indexSelection.lastSelect.value).toBeUndefined();
+            expect(indexSelection.current.value).toBeUndefined();
         });
 
-        it('最后一个选中的索引应该是数组的最后一个元素', () => {
+        it('最后一个选中的索引是数组的最后一个元素', () => {
             indexSelection.resetSelection([10, 20, 30]);
-            expect(indexSelection.lastSelect.value).toBe(30);
+            expect(indexSelection.current.value).toBe(30);
         });
     });
 
     describe('isSelected', () => {
-        it('应该正确检查索引是否被选中', () => {
+        it('正确检查索引是否被选中', () => {
             indexSelection.select(5);
 
             expect(indexSelection.isSelected(5)).toBe(true);
@@ -183,7 +184,7 @@ describe('useIndexSelection', () => {
     });
 
     describe('事件回调', () => {
-        it('应该触发 onSelect 回调', () => {
+        it('触发 onSelect 回调', () => {
             const selectCallback = vitest.fn();
             indexSelection.onSelect(selectCallback);
 
@@ -193,7 +194,7 @@ describe('useIndexSelection', () => {
             expect(selectCallback).toHaveBeenCalledWith(5);
         });
 
-        it('应该触发多次 onSelect 回调当选择多个索引时', () => {
+        it('触发多次 onSelect 回调当选择多个索引时', () => {
             const selectCallback = vitest.fn();
             indexSelection.onSelect(selectCallback);
 
@@ -205,7 +206,7 @@ describe('useIndexSelection', () => {
             expect(selectCallback).toHaveBeenCalledWith(3);
         });
 
-        it('应该触发 onUnselect 回调', () => {
+        it('触发 onUnselect 回调', () => {
             const unselectCallback = vitest.fn();
             indexSelection.onUnselect(unselectCallback);
 
@@ -216,7 +217,7 @@ describe('useIndexSelection', () => {
             expect(unselectCallback).toHaveBeenCalledWith(5);
         });
 
-        it('应该移除 onSelect 回调', () => {
+        it('移除 onSelect 回调', () => {
             const selectCallback = vitest.fn();
             indexSelection.onSelect(selectCallback);
             indexSelection.offSelect(selectCallback);
@@ -226,7 +227,7 @@ describe('useIndexSelection', () => {
             expect(selectCallback).not.toHaveBeenCalled();
         });
 
-        it('应该移除 onUnselect 回调', () => {
+        it('移除 onUnselect 回调', () => {
             const unselectCallback = vitest.fn();
             indexSelection.onUnselect(unselectCallback);
             indexSelection.offUnselect(unselectCallback);
@@ -237,7 +238,7 @@ describe('useIndexSelection', () => {
             expect(unselectCallback).not.toHaveBeenCalled();
         });
 
-        it('应该支持多个回调', () => {
+        it('支持多个回调', () => {
             const callback1 = vitest.fn();
             const callback2 = vitest.fn();
 
@@ -251,12 +252,12 @@ describe('useIndexSelection', () => {
         });
     });
 
-    describe('selectedSet, lastSelect 的只读性', () => {
-        it('selectedSet 应该是只读的', () => {
+    describe('selectedSet, current 的只读性', () => {
+        it('selectedSet 是只读的', () => {
             expect(isReadonly(indexSelection.selectedSet.value)).toBe(true);
         });
-        it('lastSelect 应该是只读的', () => {
-            expect(isReadonly(indexSelection.lastSelect)).toBe(true);
+        it('current 是只读的', () => {
+            expect(isReadonly(indexSelection.current)).toBe(true);
         });
     });
 });

@@ -2,7 +2,10 @@ import {readonly, ref} from 'vue';
 import type {IndexSelection} from '@/type/IndexSelection.ts';
 
 export const useIndexSelection = (): IndexSelection => {
-    const lastSelect = ref<number>();
+    const current = ref<number>();
+    const setCurrent = (index: number | undefined): void => {
+        current.value = index;
+    };
 
     const selectedSet = ref(new Set<number>());
 
@@ -22,27 +25,30 @@ export const useIndexSelection = (): IndexSelection => {
         unselectCallbacks.delete(callback);
     };
 
-    const select = (index: number | number[]): void => {
-        const indexes = Array.isArray(index) ? index : [index];
-        for (const index of indexes) {
-            if (!selectedSet.value.has(index)) {
-                selectedSet.value.add(index);
-                lastSelect.value = index;
-                for (const callback of selectCallbacks) {
-                    callback(index);
-                }
-            }
-        }
-    };
-
-    const selectRange = (start: number, end: number): void => {
+    const createSelectionRange = (start: number, end: number): number[] => {
         const from = Math.min(start, end);
         const to = Math.max(start, end);
         const indexes: number[] = [];
         for (let i = from; i <= to; i++) {
             indexes.push(i);
         }
-        select(indexes);
+        return indexes;
+    };
+
+    const select = (index: number | number[]): void => {
+        const indexes = Array.isArray(index) ? index : [index];
+        for (const index of indexes) {
+            if (!selectedSet.value.has(index)) {
+                selectedSet.value.add(index);
+                current.value = index;
+                for (const callback of selectCallbacks) {
+                    callback(index);
+                }
+            }
+        }
+    };
+    const selectRange = (start: number, end: number): void => {
+        select(createSelectionRange(start, end));
     };
 
     const unselect = (index: number | number[]): void => {
@@ -50,8 +56,8 @@ export const useIndexSelection = (): IndexSelection => {
         for (const index of indexes) {
             if (selectedSet.value.has(index)) {
                 selectedSet.value.delete(index);
-                if (index === lastSelect.value) {
-                    lastSelect.value = undefined;
+                if (index === current.value) {
+                    current.value = undefined;
                 }
                 for (const callback of unselectCallbacks) {
                     callback(index);
@@ -59,17 +65,9 @@ export const useIndexSelection = (): IndexSelection => {
             }
         }
     };
-
     const unselectRange = (start: number, end: number): void => {
-        const from = Math.min(start, end);
-        const to = Math.max(start, end);
-        const indexes: number[] = [];
-        for (let i = from; i <= to; i++) {
-            indexes.push(i);
-        }
-        unselect(indexes);
+        unselect(createSelectionRange(start, end));
     };
-
     const unselectAll = (): void => {
         const indexes = Array.from(selectedSet.value);
         unselect(indexes);
@@ -83,21 +81,28 @@ export const useIndexSelection = (): IndexSelection => {
         unselectAll();
         select(indexes);
     };
+    const resetSelectionRange = (start: number, end: number): void => {
+        resetSelection(createSelectionRange(start, end));
+    };
 
     return Object.freeze({
+        current: readonly(current),
+        setCurrent,
+        selectedSet: readonly(selectedSet),
+
         onSelect,
         offSelect,
         onUnselect,
         offUnselect,
 
-        lastSelect: readonly(lastSelect),
-        selectedSet: readonly(selectedSet),
+        isSelected,
+
         select,
         selectRange,
         unselect,
         unselectRange,
         unselectAll,
         resetSelection,
-        isSelected,
+        resetSelectionRange,
     });
 };

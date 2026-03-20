@@ -9,8 +9,8 @@ const props = withDefaults(
         width?: string;
     }>(),
     {
-        size: 'var(--icon-size)',
-        color: 'var(--icon-color)',
+        size: 'var(--potmot-list--icon-size)',
+        color: 'var(--potmot-list--icon-color)',
     },
 );
 

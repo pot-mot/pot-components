@@ -1,13 +1,22 @@
 :root {
-    --list-line-bg-color: #fff;
-    --list-line-hover-bg-color: #eee;
-    --list-line-selected-bg-color: #89bdf4;
+    --potmot-list--text-color: #444;
+
+    --potmot-list--bg-color: #fff;
+    --potmot-list--bg-color--hover: #eee;
+    --potmot-list--bg-color--selected: #89bdf4;
+
+    --potmot-list--icon-color: #666;
+    --potmot-list--icon-size: 1rem;
 }
 
 @media screen and (prefers-color-scheme: dark) {
     :root {
-        --list-line-bg-color: #333;
-        --list-line-hover-bg-color: #444;
-        --list-line-selected-bg-color: #4889cc;
+        --potmot-list--text-color: #eee;
+
+        --potmot-list--bg-color: #333;
+        --potmot-list--bg-color--hover: #444;
+        --potmot-list--bg-color--selected: #4889cc;
+
+        --potmot-list--icon-color: #ddd;
     }
 }

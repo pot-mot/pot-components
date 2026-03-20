@@ -7,7 +7,18 @@ import type {IndexSelection} from '@/type/IndexSelection.ts';
 export interface ViewListExpose {
     listRef: Ref<HTMLDivElement | null>;
     bodyRef: Ref<HTMLDivElement | null>;
+    focusList: () => void;
+
     indexSelection: IndexSelection;
+
+    /**
+     * 向上扩充选中区间
+     */
+    expandSelectionUpward: () => void;
+    /**
+     * 向下扩充选中区间
+     */
+    expandSelectionDownward: () => void;
 }
 
 /**
@@ -26,4 +37,14 @@ export interface EditListExpose<T> extends ViewListExpose {
      * @param index 要删除的行索引
      */
     remove: (index: number) => Promise<T | undefined>;
+
+    /**
+     * 向上移动选中项
+     */
+    moveUpSelection: () => Promise<void>;
+
+    /**
+     * 向下移动选中项
+     */
+    moveDownSelection: () => Promise<void>;
 }
