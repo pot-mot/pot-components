@@ -22,7 +22,7 @@ const props = withDefaults(
         ignoreClassNames?: string[];
         beforeCopy?: (data: T[]) => void;
         beforePaste?: (data: T[]) => void;
-        pasteValidator?: (json: any, onError: ErrorHandler) => boolean | Promise<T>;
+        pasteValidator?: (item: unknown, onError: ErrorHandler) => boolean;
     }>(),
     {
         ignoreClassNames: () => GlobalConfig.ignoreClassNames,
