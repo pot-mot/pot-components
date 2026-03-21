@@ -3,7 +3,6 @@ import {h} from 'vue';
 import {mount} from '@vue/test-utils';
 import EditList from '@/components/EditList.vue';
 import ViewList from '@/components/ViewList.vue';
-import type {ErrorHandler} from '@/type/ErrorHandler.ts';
 
 export const mountViewList = (
     props: {
@@ -44,7 +43,7 @@ export const mountEditList = (
         toKey?: (item: TestItem, index: number) => string;
         defaultLine?: () => TestItem | Promise<TestItem>;
         ignoreClassNames?: string[];
-        pasteValidator?: (item: unknown, onError: ErrorHandler) => boolean;
+        pasteValidator?: (item: unknown, onError: (error: any) => void) => boolean;
         beforeCopy?: (data: TestItem[]) => void;
         onCopied?: () => void;
         beforePaste?: (data: TestItem[]) => void;

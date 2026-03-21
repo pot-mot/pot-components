@@ -9,7 +9,6 @@ import {readText, writeText} from 'clipboard-polyfill';
 import {cloneDeep} from 'lodash-es';
 import {isIgnoreElement, isTargetIgnore} from '@/utils/checkIgnore.ts';
 import type {EditListExpose} from '@/type/ListExpose.ts';
-import type {ErrorHandler} from '@/type/ErrorHandler.ts';
 import {GlobalConfig} from '@/components/GlobalConfig.ts';
 
 const lines = defineModel<T[]>('lines', {
@@ -22,7 +21,7 @@ const props = withDefaults(
         ignoreClassNames?: string[];
         beforeCopy?: (data: T[]) => void;
         beforePaste?: (data: T[]) => void;
-        pasteValidator?: (item: unknown, onError: ErrorHandler) => boolean;
+        pasteValidator?: (item: unknown, onError: (error: any) => void) => boolean;
     }>(),
     {
         ignoreClassNames: () => GlobalConfig.ignoreClassNames,
@@ -38,7 +37,7 @@ const emit = defineEmits<{
     pasted: [items: T[]];
     added: [added: T[]];
     deleted: [deleted: T[]];
-    pasteError: [error: Map<number, Error[] | null | undefined> | any];
+    pasteError: [error: Map<number, any> | any];
 }>();
 
 const listRef = useTemplateRef<HTMLDivElement>('listRef');

@@ -198,15 +198,15 @@ const handleCopied = (data: ViewListItem[]) => {
 
 ### EditList Props
 
-| 属性                    | 类型                                                             | 必填 | 说明                  |
-|-----------------------|----------------------------------------------------------------|----|---------------------|
-| lines                 | `T[]`                                                          | ✅  | 列表数据（支持 v-model）    |
-| defaultLine           | `T \| (() => T \| Promise<T>)`                                 | ✅  | 默认新行数据或生成函数         |
-| toKey                 | `(line: T, index: number) => string`                           | ✅  | 生成唯一键的函数            |
-| pasteValidator        | `(json: any, onError?: ErrorHandler) => boolean \| Promise<T>` | ❌  | 粘贴验证函数              |
-| ignoreClassNames | `string[]`                                                     | ❌  | 交互式元素的类名列表          |
-| beforeCopy            | `(data: T[]) => void`                                          | ❌  | 复制前回调，可以在复制前对数据进行处理 |
-| beforePaste           | `(data: T[]) => void`                                          | ❌  | 粘贴前回调，可以在粘贴前对数据进行处理 |
+| 属性               | 类型                                                       | 必填 | 说明                  |
+|------------------|----------------------------------------------------------|----|---------------------|
+| lines            | `T[]`                                                    | ✅  | 列表数据（支持 v-model）    |
+| defaultLine      | `T \| (() => T \| Promise<T>)`                           | ✅  | 默认新行数据或生成函数         |
+| toKey            | `(line: T, index: number) => string`                     | ✅  | 生成唯一键的函数            |
+| pasteValidator   | `(json: any, onError?: (error: any) => void) => boolean` | ❌  | 粘贴验证函数              |
+| ignoreClassNames | `string[]`                                               | ❌  | 交互式元素的类名列表          |
+| beforeCopy       | `(data: T[]) => void`                                    | ❌  | 复制前回调，可以在复制前对数据进行处理 |
+| beforePaste      | `(data: T[]) => void`                                    | ❌  | 粘贴前回调，可以在粘贴前对数据进行处理 |
 
 ### ViewList Props
 
@@ -228,7 +228,7 @@ const handleCopied = (data: ViewListItem[]) => {
 | deleted     | `(deleted: T[])`                          | 删除项时触发    |
 | copied      | `(copied: T[])`                           | 复制成功时触发   |
 | pasted      | `(pasted: T[])`                           | 粘贴成功时触发   |
-| paste-error | `(error: Map<number, Error[]> \| any)`    | 粘贴验证失败时触发 |
+| paste-error | `(error: Map<number, any> \| any)`        | 粘贴验证失败时触发 |
 
 ### ViewList Events
 

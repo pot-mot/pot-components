@@ -8,6 +8,5 @@ export {isIgnoreElement, isTargetIgnore} from './utils/checkIgnore.ts';
 export {useIndexSelection} from './utils/indexSelection';
 
 export type {IndexSelection} from './type/IndexSelection.ts';
-export type {ErrorHandler} from './type/ErrorHandler.ts';
 
 export {EditList, ViewList};
