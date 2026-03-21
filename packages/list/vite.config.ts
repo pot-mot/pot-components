@@ -24,6 +24,7 @@ export default defineConfig({
     ],
 
     build: {
+        emptyOutDir: true,
         rolldownOptions: {
             external: ['vue'],
             input: './src/index.ts',

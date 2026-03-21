@@ -37,17 +37,17 @@ const handleCopied = (data: EditListItem[]) => {
     alert(`复制了 ${data.map((it) => it.name).join(',')}`);
 };
 
-const validateJson = (json: any) => {
-    if (typeof json !== 'object') {
+const validateItem = (item: any) => {
+    if (typeof item !== 'object') {
         return false;
     }
-    if (!json.id || !json.name || !json.age) {
+    if (!item.id || !item.name || !item.age) {
         return false;
     }
     return !(
-        typeof json.id !== 'string' ||
-        typeof json.name !== 'string' ||
-        typeof json.age !== 'number'
+        typeof item.id !== 'string' ||
+        typeof item.name !== 'string' ||
+        typeof item.age !== 'number'
     );
 };
 
@@ -73,7 +73,7 @@ const handlePasted = (data: EditListItem[]) => {
                 :to-key="(item) => item.id"
                 :default-line="defaultEditListData"
                 @copied="handleCopied"
-                :jsonValidator="validateJson"
+                :pasteValidator="validateItem"
                 :before-paste="beforePaste"
                 @pasted="handlePasted"
             >

@@ -21,7 +21,7 @@ const props = withDefaults(
         interactiveClassNames?: string[];
         beforeCopy?: (data: T[]) => void;
         beforePaste?: (data: T[]) => void;
-        jsonValidator?: (json: any, onError: ErrorHandler) => boolean | Promise<T>;
+        pasteValidator?: (json: any, onError: ErrorHandler) => boolean | Promise<T>;
     }>(),
     {
         interactiveClassNames: () => [],
@@ -95,8 +95,8 @@ useClickOutside(
 );
 
 const handlePaste = async () => {
-    if (props.jsonValidator === undefined) return;
-    const jsonValidator = props.jsonValidator;
+    if (props.pasteValidator === undefined) return;
+    const pasteValidator = props.pasteValidator;
 
     const text = await readText();
     try {
@@ -115,7 +115,7 @@ const handlePaste = async () => {
         const pasteData = Array.isArray(value) ? value : [value];
         if (
             pasteData.filter((item, index) => {
-                return jsonValidator(item, (e) => validateErrorsMap.set(index, e));
+                return pasteValidator(item, (e) => validateErrorsMap.set(index, e));
             }).length === pasteData.length
         ) {
             props.beforePaste?.(pasteData);

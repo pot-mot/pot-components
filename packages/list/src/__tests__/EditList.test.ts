@@ -26,7 +26,7 @@ const mountList = (
         toKey?: (item: TestItem, index: number) => string;
         defaultLine?: () => TestItem | Promise<TestItem>;
         interactiveClassNames?: string[];
-        jsonValidator?: (json: any, onError?: any) => boolean;
+        pasteValidator?: (json: any, onError?: any) => boolean;
         beforeCopy?: (data: TestItem[]) => void;
         onCopied?: () => void;
         beforePaste?: (data: TestItem[]) => void;
@@ -50,7 +50,7 @@ const mountList = (
             toKey: props.toKey ?? (((item: TestItem) => item.id) as any),
             defaultLine: props.defaultLine ?? (() => ({id: 'default', name: 'default'})),
             interactiveClassNames: props.interactiveClassNames,
-            jsonValidator: props.jsonValidator,
+            pasteValidator: props.pasteValidator,
             beforeCopy: props.beforeCopy as any,
             onCopied: props.onCopied,
             beforePaste: props.beforePaste as any,
@@ -161,13 +161,13 @@ describe('EditList 组件', () => {
             expect(wrapper.findAll('.line-wrapper').length).toBe(1);
         });
 
-        it('接收 jsonValidator prop', () => {
+        it('接收 pasteValidator prop', () => {
             const validator = vi.fn(() => true);
             const wrapper = mountList({
                 lines: [],
-                jsonValidator: validator,
+                pasteValidator: validator,
             });
-            expect(wrapper.props('jsonValidator')).toBe(validator);
+            expect(wrapper.props('pasteValidator')).toBe(validator);
         });
     });
 
@@ -363,7 +363,7 @@ describe('EditList 组件', () => {
             const validator = vi.fn(() => false);
             const wrapper = mountList({
                 lines: [],
-                jsonValidator: validator,
+                pasteValidator: validator,
             });
 
             // Mock clipboard
@@ -528,7 +528,7 @@ describe('EditList 组件', () => {
 
             const wrapper = mountList({
                 lines: createTestItems(2),
-                jsonValidator: validator,
+                pasteValidator: validator,
             });
 
             // Mock clipboard
@@ -555,7 +555,7 @@ describe('EditList 组件', () => {
 
             const wrapper = mountList({
                 lines: createTestItems(2),
-                jsonValidator: validator,
+                pasteValidator: validator,
             });
 
             const {readText} = await import('clipboard-polyfill');
@@ -573,7 +573,7 @@ describe('EditList 组件', () => {
 
             const wrapper = mountList({
                 lines: [],
-                jsonValidator: validator,
+                pasteValidator: validator,
                 beforePaste: beforePasteSpy,
             });
 
@@ -592,7 +592,7 @@ describe('EditList 组件', () => {
 
             const wrapper = mountList({
                 lines: [],
-                jsonValidator: validator,
+                pasteValidator: validator,
                 onPasted: onPastedSpy,
             });
 
@@ -924,7 +924,7 @@ describe('EditList 组件', () => {
         it('处理粘贴 JSON 解析错误', async () => {
             const wrapper = mountList({
                 lines: createTestItems(2),
-                jsonValidator: vi.fn(() => true),
+                pasteValidator: vi.fn(() => true),
             });
 
             const {readText} = await import('clipboard-polyfill');
@@ -946,7 +946,7 @@ describe('EditList 组件', () => {
 
             const wrapper = mountList({
                 lines: createTestItems(2),
-                jsonValidator: validator,
+                pasteValidator: validator,
             });
 
             const invalidData = [
