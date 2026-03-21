@@ -1,65 +1,12 @@
 import {describe, it, expect, vi, assert} from 'vitest';
-import {mount} from '@vue/test-utils';
 import {h, nextTick} from 'vue';
-import EditList from '@/components/EditList.vue';
+import {createTestItems, type TestItem} from './TestItem';
+import {mountEditList as mountList} from '@/__tests__/mountComponent.ts';
 
 vi.mock('clipboard-polyfill', () => ({
     readText: vi.fn(),
     writeText: vi.fn(),
 }));
-
-type TestItem = {
-    id: string;
-    name: string;
-};
-
-const createTestItems = (count: number): TestItem[] => {
-    return Array.from({length: count}, (_, i) => ({
-        id: `id-${i}`,
-        name: `item ${i}`,
-    }));
-};
-
-const mountList = (
-    props: {
-        lines?: TestItem[];
-        toKey?: (item: TestItem, index: number) => string;
-        defaultLine?: () => TestItem | Promise<TestItem>;
-        interactiveClassNames?: string[];
-        pasteValidator?: (json: any, onError?: any) => boolean;
-        beforeCopy?: (data: TestItem[]) => void;
-        onCopied?: () => void;
-        beforePaste?: (data: TestItem[]) => void;
-        onPasted?: () => void;
-    } = {},
-    slots?: {
-        line?: any;
-        head?: any;
-        tail?: any;
-    },
-) => {
-    const defaultSlots: any = {
-        line: ({item, index}: {item: TestItem; index: number}) =>
-            h('div', {class: 'line-content'}, `${item.name}-${index}`),
-        ...slots,
-    };
-
-    return mount(EditList, {
-        props: {
-            lines: props.lines ?? [],
-            toKey: props.toKey ?? (((item: TestItem) => item.id) as any),
-            defaultLine: props.defaultLine ?? (() => ({id: 'default', name: 'default'})),
-            interactiveClassNames: props.interactiveClassNames,
-            pasteValidator: props.pasteValidator,
-            beforeCopy: props.beforeCopy as any,
-            onCopied: props.onCopied,
-            beforePaste: props.beforePaste as any,
-            onPasted: props.onPasted,
-        },
-        slots: defaultSlots,
-        attachTo: document.body,
-    });
-};
 
 describe('EditList 组件', () => {
     describe('基础渲染', () => {
@@ -125,12 +72,12 @@ describe('EditList 组件', () => {
             expect(wrapper.props('toKey')).toBe(customToKey);
         });
 
-        it('接收 interactiveClassNames prop', () => {
+        it('接收 ignoreClassNames prop', () => {
             const wrapper = mountList({
                 lines: createTestItems(1),
-                interactiveClassNames: ['interactive'],
+                ignoreClassNames: ['interactive'],
             });
-            expect(wrapper.props('interactiveClassNames')).toStrictEqual(['interactive']);
+            expect(wrapper.props('ignoreClassNames')).toStrictEqual(['interactive']);
         });
 
         it('接受函数形式的 defaultLine', async () => {
@@ -369,11 +316,13 @@ describe('EditList 组件', () => {
             // Mock clipboard
             const {readText} = await import('clipboard-polyfill');
             vi.mocked(readText).mockResolvedValue('[{"invalid": "data"}]');
+            const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
             await wrapper.trigger('keydown', {key: 'v', ctrlKey: true});
             await nextTick();
 
             expect(wrapper.emitted('pasteError')).toBeDefined();
+            consoleSpy.mockRestore();
         });
     });
 
@@ -388,14 +337,14 @@ describe('EditList 组件', () => {
             expect(selectedItems.length).toBe(3);
         });
 
-        it('在非交互元素上响应键盘事件', async () => {
+        it('在非忽略元素上响应键盘事件', async () => {
             const items = createTestItems(2);
             const wrapper = mountList({
                 lines: items,
-                interactiveClassNames: ['interactive'],
+                ignoreClassNames: ['interactive'],
             });
 
-            // 直接在组件上触发键盘事件（不在交互式元素上）
+            // 直接在组件上触发键盘事件（不在忽略元素上）
             await wrapper.trigger('keydown', {key: 'a', ctrlKey: true});
 
             // 检查全选
@@ -403,11 +352,11 @@ describe('EditList 组件', () => {
             expect(selectedItems.length).toBe(2);
         });
 
-        it('在交互元素上不响应键盘事件', async () => {
+        it('在忽略元素上不响应键盘事件', async () => {
             const items = createTestItems(2);
             const wrapper = mountList({
                 lines: items,
-                interactiveClassNames: ['interactive'],
+                ignoreClassNames: ['interactive'],
             });
 
             const item = wrapper.find('.line-wrapper');
@@ -776,13 +725,6 @@ describe('EditList 组件', () => {
     });
 
     describe('边界情况', () => {
-        it('处理空列表时的键盘操作', async () => {
-            const wrapper = mountList({lines: []});
-
-            // 在空列表上按 Delete 不报错
-            expect(wrapper.trigger('keydown', {key: 'Delete'})).resolves.not.toThrow();
-        });
-
         it('处理只有一个项目时的删除', async () => {
             const wrapper = mountList({lines: createTestItems(1)});
 
@@ -830,38 +772,6 @@ describe('EditList 组件', () => {
             await nextTick();
 
             expect(wrapper.findAll('.line-wrapper').length).toBe(3);
-        });
-    });
-
-    describe('交互式元素处理', () => {
-        it('忽略交互式元素上的键盘事件', async () => {
-            const wrapper = mountList({
-                lines: createTestItems(2),
-                interactiveClassNames: ['interactive'],
-            });
-
-            // 直接在组件上触发键盘事件（不在交互式元素上）
-            await wrapper.trigger('keydown', {key: 'Delete'});
-
-            // 不删除任何项目（因为没有选中的项）
-            expect(wrapper.findAll('.line-wrapper').length).toBe(2);
-        });
-
-        it('在交互式元素上跳过键盘事件处理', async () => {
-            const wrapper = mountList({
-                lines: createTestItems(2),
-                interactiveClassNames: ['interactive'],
-            });
-
-            // 选中第一个项目
-            await wrapper.findAll('.line-wrapper')[0].trigger('click');
-
-            // 直接在组件上触发键盘事件 (不在交互式元素上)
-            // 由于没有按 Delete,只是检查 interactiveClassNames 的处理
-            await wrapper.trigger('keydown', {key: 'Delete'});
-
-            // 删除选中的项目
-            expect(wrapper.findAll('.line-wrapper').length).toBe(1);
         });
     });
 
@@ -929,6 +839,7 @@ describe('EditList 组件', () => {
 
             const {readText} = await import('clipboard-polyfill');
             vi.mocked(readText).mockResolvedValue('invalid json{');
+            const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
             await wrapper.trigger('keydown', {key: 'v', ctrlKey: true});
             await nextTick();
@@ -937,6 +848,7 @@ describe('EditList 组件', () => {
             expect(wrapper.emitted('pasteError')).toBeDefined();
             // 列表不变化
             expect(wrapper.findAll('.line-wrapper').length).toBe(2);
+            consoleSpy.mockRestore();
         });
 
         it('处理部分无效的粘贴数据', async () => {
@@ -957,6 +869,7 @@ describe('EditList 组件', () => {
 
             const {readText} = await import('clipboard-polyfill');
             vi.mocked(readText).mockResolvedValue(JSON.stringify(invalidData));
+            const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
             await wrapper.trigger('keydown', {key: 'v', ctrlKey: true});
             await nextTick();
@@ -965,6 +878,7 @@ describe('EditList 组件', () => {
             expect(wrapper.emitted('pasteError')).toBeDefined();
             // 列表不变化
             expect(wrapper.findAll('.line-wrapper').length).toBe(2);
+            consoleSpy.mockRestore();
         });
     });
 

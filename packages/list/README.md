@@ -204,7 +204,7 @@ const handleCopied = (data: ViewListItem[]) => {
 | defaultLine           | `T \| (() => T \| Promise<T>)`                                 | ✅  | 默认新行数据或生成函数         |
 | toKey                 | `(line: T, index: number) => string`                           | ✅  | 生成唯一键的函数            |
 | pasteValidator        | `(json: any, onError?: ErrorHandler) => boolean \| Promise<T>` | ❌  | 粘贴验证函数              |
-| interactiveClassNames | `string[]`                                                     | ❌  | 交互式元素的类名列表          |
+| ignoreClassNames | `string[]`                                                     | ❌  | 交互式元素的类名列表          |
 | beforeCopy            | `(data: T[]) => void`                                          | ❌  | 复制前回调，可以在复制前对数据进行处理 |
 | beforePaste           | `(data: T[]) => void`                                          | ❌  | 粘贴前回调，可以在粘贴前对数据进行处理 |
 
@@ -214,7 +214,7 @@ const handleCopied = (data: ViewListItem[]) => {
 |-----------------------|--------------------------------------|----|---------------------|
 | lines                 | `T[]`                                | ✅  | 列表数据                |
 | toKey                 | `(line: T, index: number) => string` | ✅  | 生成唯一键的函数            |
-| interactiveClassNames | `string[]`                           | ❌  | 交互式元素的类名列表          |
+| ignoreClassNames | `string[]`                           | ❌  | 交互式元素的类名列表          |
 | beforeCopy            | `(data: T[]) => void`                | ❌  | 复制前回调，可以在复制前对数据进行处理 |
 
 ### EditList Events

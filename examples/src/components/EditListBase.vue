@@ -61,6 +61,10 @@ const beforePaste = (items: EditListItem[]) => {
 const handlePasted = (data: EditListItem[]) => {
     alert(`粘贴了 ${data.map((it) => it.name).join(',')}`);
 };
+
+const handlePasteError = (error: any) => {
+    alert('粘贴错误：' + error);
+};
 </script>
 
 <template>
@@ -76,12 +80,13 @@ const handlePasted = (data: EditListItem[]) => {
                 :pasteValidator="validateItem"
                 :before-paste="beforePaste"
                 @pasted="handlePasted"
+                @paste-error="handlePasteError"
             >
                 <template #line="{item}">
                     <div class="line-item">
                         <span>ID: {{ item.id }}</span>
-                        <span>姓名: {{ item.name }}</span>
-                        <span>年龄: {{ item.age }}</span>
+                        <span>姓名: <input v-model="item.name" /></span>
+                        <span>年龄: <input v-model.number="item.age" /></span>
                     </div>
                 </template>
             </EditList>

@@ -1,4 +1,4 @@
-const interactionTagNames: string[] = [
+const ignoreTagName: string[] = [
     'input',
     'textarea',
     'button',
@@ -25,14 +25,14 @@ const checkElementUpward = (el: Element | null, check: (el: Element) => boolean)
 /**
  * 判断元素是否是一个交互用元素
  */
-export const isInteractiveElement = (el: Element, interactiveClassNames: string[]): boolean => {
+export const isIgnoreElement = (el: Element, ignoreClassNames: string[]): boolean => {
     if ('contenteditable' in el) {
         return true;
     }
-    if (interactionTagNames.includes(el.tagName.toLowerCase())) {
+    if (ignoreTagName.includes(el.tagName.toLowerCase())) {
         return true;
     }
-    for (const className of interactiveClassNames) {
+    for (const className of ignoreClassNames) {
         if (el.classList.contains(className)) {
             return true;
         }
@@ -40,8 +40,8 @@ export const isInteractiveElement = (el: Element, interactiveClassNames: string[
     return false;
 };
 
-export const isTargetInteractive = (e: UIEvent, interactiveClassNames: string[]): boolean => {
+export const isTargetIgnore = (e: UIEvent, ignoreClassNames: string[]): boolean => {
     let target = e.target;
     if (!(target instanceof Element)) return false;
-    return checkElementUpward(target, (el) => isInteractiveElement(el, interactiveClassNames));
+    return checkElementUpward(target, (el) => isIgnoreElement(el, ignoreClassNames));
 };

@@ -1,57 +1,12 @@
 import {describe, it, expect, vi, assert} from 'vitest';
-import {mount} from '@vue/test-utils';
 import {h, nextTick} from 'vue';
-import ViewList from '@/components/ViewList.vue';
+import {createTestItems, type TestItem} from '@/__tests__/TestItem.ts';
+import {mountViewList as mountList} from '@/__tests__/mountComponent.ts';
 
 vi.mock('clipboard-polyfill', () => ({
     readText: vi.fn(),
     writeText: vi.fn(),
 }));
-
-type TestItem = {
-    id: string;
-    name: string;
-};
-
-const createTestItems = (count: number): TestItem[] => {
-    return Array.from({length: count}, (_, i) => ({
-        id: `id-${i}`,
-        name: `item ${i}`,
-    }));
-};
-
-const mountList = (
-    props: {
-        lines?: TestItem[];
-        toKey?: (item: TestItem, index: number) => string;
-        interactiveClassNames?: string[];
-        beforeCopy?: (data: TestItem[]) => void;
-        onCopied?: () => void;
-    } = {},
-    slots?: {
-        line?: any;
-        head?: any;
-        tail?: any;
-    },
-) => {
-    const defaultSlots: any = {
-        line: ({item, index}: {item: TestItem; index: number}) =>
-            h('div', {class: 'line-content'}, `${item.name}-${index}`),
-        ...slots,
-    };
-
-    return mount(ViewList, {
-        props: {
-            lines: props.lines ?? [],
-            toKey: props.toKey ?? (((item: TestItem) => item.id) as any),
-            interactiveClassNames: props.interactiveClassNames,
-            beforeCopy: props.beforeCopy as any,
-            onCopied: props.onCopied,
-        },
-        slots: defaultSlots,
-        attachTo: document.body,
-    });
-};
 
 describe('ViewList 组件', () => {
     describe('基础渲染', () => {
@@ -111,12 +66,12 @@ describe('ViewList 组件', () => {
             expect(wrapper.props('toKey')).toBe(customToKey);
         });
 
-        it('接收 interactiveClassNames prop', () => {
+        it('接收 ignoreClassNames prop', () => {
             const wrapper = mountList({
                 lines: createTestItems(1),
-                interactiveClassNames: ['interactive'],
+                ignoreClassNames: ['interactive'],
             });
-            expect(wrapper.props('interactiveClassNames')).toStrictEqual(['interactive']);
+            expect(wrapper.props('ignoreClassNames')).toStrictEqual(['interactive']);
         });
     });
 
@@ -279,14 +234,14 @@ describe('ViewList 组件', () => {
             expect(selectedItems.length).toBe(3);
         });
 
-        it('在非交互元素上响应键盘事件', async () => {
+        it('在非忽略元素上响应键盘事件', async () => {
             const items = createTestItems(2);
             const wrapper = mountList({
                 lines: items,
-                interactiveClassNames: ['interactive'],
+                ignoreClassNames: ['interactive'],
             });
 
-            // 直接在组件上触发键盘事件（不在交互式元素上）
+            // 直接在组件上触发键盘事件（不在忽略元素上）
             await wrapper.trigger('keydown', {key: 'a', ctrlKey: true});
 
             // 检查全选
@@ -294,11 +249,11 @@ describe('ViewList 组件', () => {
             expect(selectedItems.length).toBe(2);
         });
 
-        it('在交互元素上不响应键盘事件', async () => {
+        it('在忽略元素上不响应键盘事件', async () => {
             const items = createTestItems(2);
             const wrapper = mountList({
                 lines: items,
-                interactiveClassNames: ['interactive'],
+                ignoreClassNames: ['interactive'],
             });
 
             const item = wrapper.find('.line-wrapper');

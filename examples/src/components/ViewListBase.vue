@@ -43,8 +43,8 @@ const handleCopied = (data: ViewListItem[]) => {
             >
                 <template #line="{item}">
                     <div class="line-item">
-                        <span>id: {{ item.id }}</span>
-                        <span>名字: {{ item.name }}</span>
+                        <span>ID: {{ item.id }}</span>
+                        <span>姓名: {{ item.name }}</span>
                         <span>年龄: {{ item.age }}</span>
                     </div>
                 </template>

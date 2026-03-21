@@ -7,9 +7,10 @@ import '@/style/list-variables.css';
 import json5 from 'json5';
 import {readText, writeText} from 'clipboard-polyfill';
 import {cloneDeep} from 'lodash-es';
-import {isInteractiveElement, isTargetInteractive} from '@/utils/checkInteractive.ts';
+import {isIgnoreElement, isTargetIgnore} from '@/utils/checkIgnore.ts';
 import type {EditListExpose} from '@/type/ListExpose.ts';
 import type {ErrorHandler} from '@/type/ErrorHandler.ts';
+import {GlobalConfig} from '@/components/GlobalConfig.ts';
 
 const lines = defineModel<T[]>('lines', {
     required: true,
@@ -18,13 +19,13 @@ const props = withDefaults(
     defineProps<{
         toKey: (line: T, index: number) => string;
         defaultLine: () => T | Promise<T>;
-        interactiveClassNames?: string[];
+        ignoreClassNames?: string[];
         beforeCopy?: (data: T[]) => void;
         beforePaste?: (data: T[]) => void;
         pasteValidator?: (json: any, onError: ErrorHandler) => boolean | Promise<T>;
     }>(),
     {
-        interactiveClassNames: () => [],
+        ignoreClassNames: () => GlobalConfig.ignoreClassNames,
     },
 );
 
@@ -44,10 +45,7 @@ const listRef = useTemplateRef<HTMLDivElement>('listRef');
 const bodyRef = useTemplateRef<HTMLDivElement>('bodyRef');
 const lastAddButtonRef = useTemplateRef<HTMLButtonElement>('lastAddButtonRef');
 const focusList = () => {
-    if (
-        document.activeElement &&
-        isInteractiveElement(document.activeElement, props.interactiveClassNames)
-    )
+    if (document.activeElement && isIgnoreElement(document.activeElement, props.ignoreClassNames))
         return;
     listRef.value?.focus();
 };
@@ -98,8 +96,8 @@ const handlePaste = async () => {
     if (props.pasteValidator === undefined) return;
     const pasteValidator = props.pasteValidator;
 
-    const text = await readText();
     try {
+        const text = await readText();
         const value = json5.parse(text);
         const tempLines = [...lines.value];
 
@@ -122,6 +120,7 @@ const handlePaste = async () => {
             tempLines.splice(insertIndex, 0, ...pasteData);
             insertLength = pasteData.length;
         } else {
+            GlobalConfig.pasteErrorHandler(validateErrorsMap);
             emit('pasteError', validateErrorsMap);
             return;
         }
@@ -136,6 +135,7 @@ const handlePaste = async () => {
         }
         emit('pasted', pasteData);
     } catch (e) {
+        GlobalConfig.pasteErrorHandler(e);
         emit('pasteError', e);
     }
 };
@@ -302,7 +302,7 @@ const handleItemClick = (e: MouseEvent, item: T, index: number) => {
         }
         selectRange(index, current.value);
     } else {
-        if (!isTargetInteractive(e, props.interactiveClassNames)) {
+        if (!isTargetIgnore(e, props.ignoreClassNames)) {
             resetSelection([index]);
         }
     }
@@ -315,7 +315,7 @@ const prepareKeyboardEvent = (e: KeyboardEvent) => {
 };
 
 const handleKeyboardEvent = async (e: KeyboardEvent) => {
-    if (isTargetInteractive(e, props.interactiveClassNames)) {
+    if (isTargetIgnore(e, props.ignoreClassNames)) {
         return;
     }
 

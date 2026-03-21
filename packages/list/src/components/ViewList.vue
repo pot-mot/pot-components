@@ -5,18 +5,19 @@ import {onBeforeUnmount, onMounted, toRaw, useTemplateRef} from 'vue';
 import '@/style/list-variables.css';
 import {writeText} from 'clipboard-polyfill';
 import {cloneDeep} from 'lodash-es';
-import {isInteractiveElement, isTargetInteractive} from '@/utils/checkInteractive.ts';
+import {isIgnoreElement, isTargetIgnore} from '@/utils/checkIgnore.ts';
 import type {ViewListExpose} from '@/type/ListExpose.ts';
+import {GlobalConfig} from '@/components/GlobalConfig.ts';
 
 const props = withDefaults(
     defineProps<{
         lines: T[];
         toKey: (line: T, index: number) => string;
-        interactiveClassNames?: string[];
+        ignoreClassNames?: string[];
         beforeCopy?: (data: T[]) => void;
     }>(),
     {
-        interactiveClassNames: () => [],
+        ignoreClassNames: () => GlobalConfig.ignoreClassNames,
     },
 );
 
@@ -33,7 +34,7 @@ const bodyRef = useTemplateRef<HTMLDivElement>('bodyRef');
 const focusList = () => {
     if (
         document.activeElement &&
-        isInteractiveElement(document.activeElement, props.interactiveClassNames)
+        isIgnoreElement(document.activeElement, props.ignoreClassNames)
     )
         return;
     listRef.value?.focus();
@@ -133,7 +134,7 @@ const handleItemClick = (e: MouseEvent, item: T, index: number) => {
         }
         selectRange(index, current.value);
     } else {
-        if (!isTargetInteractive(e, props.interactiveClassNames)) {
+        if (!isTargetIgnore(e, props.ignoreClassNames)) {
             resetSelection([index]);
         }
     }
@@ -146,7 +147,7 @@ const prepareKeyboardEvent = (e: KeyboardEvent) => {
 };
 
 const handleKeyboardEvent = async (e: KeyboardEvent) => {
-    if (isTargetInteractive(e, props.interactiveClassNames)) {
+    if (isTargetIgnore(e, props.ignoreClassNames)) {
         return;
     }
 

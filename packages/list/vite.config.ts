@@ -16,10 +16,7 @@ export default defineConfig({
         vue(),
         dts({
             outDir: ['es', 'lib'],
-            tsconfigPath: resolve(__dirname, 'tsconfig.app.json'),
-            compilerOptions: {
-                baseUrl: '.',
-            },
+            tsconfigPath: './tsconfig.app.json',
         }),
     ],
 
@@ -27,7 +24,7 @@ export default defineConfig({
         emptyOutDir: true,
         rolldownOptions: {
             external: ['vue'],
-            input: './src/index.ts',
+            input: resolve(__dirname, 'src/index.ts'),
 
             output: [
                 {
@@ -50,7 +47,6 @@ export default defineConfig({
             entry: './index.ts',
             name: '@potmot/list',
             fileName: 'index',
-            formats: ['es', 'umd', 'cjs'],
         },
     },
 

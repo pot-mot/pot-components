@@ -45,6 +45,4 @@
     resize: none;
     height: 4rem;
     width: 100%;
-    color: var(--text-color);
-    background-color: var(--bg-color--lighter);
 }
