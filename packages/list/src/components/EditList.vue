@@ -28,7 +28,7 @@ const props = withDefaults(
     },
 );
 
-const emits = defineEmits<{
+const emit = defineEmits<{
     clickItem: [e: MouseEvent, item: T, index: number];
     clickOutside: [e: MouseEvent];
     selected: [item: T, index: number];
@@ -56,13 +56,13 @@ const indexSelection = useIndexSelection();
 const onSelect = (index: number) => {
     const item = lines.value[index];
     if (item !== undefined) {
-        emits('selected', item, index);
+        emit('selected', item, index);
     }
 };
 const onUnselect = (index: number) => {
     const item = lines.value[index];
     if (item !== undefined) {
-        emits('unselected', item, index);
+        emit('unselected', item, index);
     }
 };
 onMounted(() => {
@@ -90,7 +90,7 @@ useClickOutside(
     (e) => {
         if (e.target instanceof Element && lastAddButtonRef.value?.contains(e.target)) return;
         unselectAll();
-        emits('clickOutside', e);
+        emit('clickOutside', e);
     },
 );
 
@@ -122,7 +122,7 @@ const handlePaste = async () => {
             tempLines.splice(insertIndex, 0, ...pasteData);
             insertLength = pasteData.length;
         } else {
-            emits('pasteError', validateErrorsMap);
+            emit('pasteError', validateErrorsMap);
             return;
         }
 
@@ -134,9 +134,9 @@ const handlePaste = async () => {
         for (let i = insertIndex; i < insertIndex + insertLength; i++) {
             select(i);
         }
-        emits('pasted', pasteData);
+        emit('pasted', pasteData);
     } catch (e) {
-        emits('pasteError', e);
+        emit('pasteError', e);
     }
 };
 
@@ -160,7 +160,7 @@ const insert = async (index: number) => {
     await nextTick();
 
     resetSelection([index]);
-    emits('added', [newItem]);
+    emit('added', [newItem]);
 
     return newItem;
 };
@@ -181,7 +181,7 @@ const remove = async (index: number): Promise<T | undefined> => {
         }
     });
     resetSelection(newSelectedIndex);
-    emits('deleted', [line]);
+    emit('deleted', [line]);
     return line;
 };
 
@@ -282,7 +282,7 @@ const moveDownSelection = async () => {
 };
 
 const handleItemClick = (e: MouseEvent, item: T, index: number) => {
-    emits('clickItem', e, item, index);
+    emit('clickItem', e, item, index);
 
     e.stopPropagation();
     e.stopImmediatePropagation();
@@ -343,7 +343,7 @@ const handleKeyboardEvent = async (e: KeyboardEvent) => {
 
         unselectAll();
         lines.value = unselectedItems;
-        emits('deleted', selectedItems);
+        emit('deleted', selectedItems);
     } else if (e.key === 'ArrowUp') {
         prepareKeyboardEvent(e);
 
@@ -375,17 +375,17 @@ const handleKeyboardEvent = async (e: KeyboardEvent) => {
             const copyData = cloneDeep(toRaw(selectedItems));
             props.beforeCopy?.(copyData);
             await writeText(JSON.stringify(copyData));
-            emits('copied', copyData);
+            emit('copied', copyData);
         } else if (e.key === 'x') {
             prepareKeyboardEvent(e);
 
             const copyData = cloneDeep(toRaw(selectedItems));
             props.beforeCopy?.(copyData);
             await writeText(JSON.stringify(copyData));
-            emits('copied', copyData);
+            emit('copied', copyData);
             unselectAll();
             lines.value = unselectedItems;
-            emits('deleted', selectedItems);
+            emit('deleted', selectedItems);
         } else if (e.key === 'v') {
             prepareKeyboardEvent(e);
 

@@ -20,7 +20,7 @@ const props = withDefaults(
     },
 );
 
-const emits = defineEmits<{
+const emit = defineEmits<{
     clickItem: [e: MouseEvent, item: T, index: number];
     clickOutside: [e: MouseEvent];
     selected: [item: T, index: number];
@@ -43,13 +43,13 @@ const indexSelection = useIndexSelection();
 const onSelect = (index: number) => {
     const item = props.lines[index];
     if (item !== undefined) {
-        emits('selected', item, index);
+        emit('selected', item, index);
     }
 };
 const onUnselect = (index: number) => {
     const item = props.lines[index];
     if (item !== undefined) {
-        emits('unselected', item, index);
+        emit('unselected', item, index);
     }
 };
 onMounted(() => {
@@ -76,7 +76,7 @@ useClickOutside(
     () => bodyRef.value,
     (e) => {
         unselectAll();
-        emits('clickOutside', e);
+        emit('clickOutside', e);
     },
 );
 
@@ -113,7 +113,7 @@ const expandSelectionDownward = () => {
 };
 
 const handleItemClick = (e: MouseEvent, item: T, index: number) => {
-    emits('clickItem', e, item, index);
+    emit('clickItem', e, item, index);
 
     e.stopPropagation();
     e.stopImmediatePropagation();
@@ -185,7 +185,7 @@ const handleKeyboardEvent = async (e: KeyboardEvent) => {
             const copyData = cloneDeep(toRaw(selectedItems));
             props.beforeCopy?.(copyData);
             await writeText(JSON.stringify(copyData));
-            emits('copied', copyData);
+            emit('copied', copyData);
         }
     }
 };

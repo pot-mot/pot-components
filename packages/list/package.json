@@ -47,14 +47,7 @@
     },
     "devDependencies": {
         "@tsconfig/node22": "^22.0.5",
-        "@types/jsdom": "^28.0.0",
-        "@types/lodash-es": "^4.17.12",
-        "@vitest/coverage-v8": "^4.1.0",
-        "@vue/test-utils": "^2.4.6",
-        "jsdom": "^29.0.0",
-        "vite-plugin-dts": "^4.5.4",
-        "vitest": "^4.1.0",
-        "vue-tsc": "^3.2.6"
+        "@types/lodash-es": "^4.17.12"
     },
     "dependencies": {
         "clipboard-polyfill": "^4.1.1",
