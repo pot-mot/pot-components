@@ -26,7 +26,7 @@ const mountList = (
         toKey?: (item: TestItem, index: number) => string;
         interactiveClassNames?: string[];
         beforeCopy?: (data: TestItem[]) => void;
-        afterCopy?: () => void;
+        onCopied?: () => void;
     } = {},
     slots?: {
         line?: any;
@@ -46,7 +46,7 @@ const mountList = (
             toKey: props.toKey ?? (((item: TestItem) => item.id) as any),
             interactiveClassNames: props.interactiveClassNames,
             beforeCopy: props.beforeCopy as any,
-            afterCopy: props.afterCopy,
+            onCopied: props.onCopied,
         },
         slots: defaultSlots,
         attachTo: document.body,
@@ -342,18 +342,18 @@ describe('ViewList 组件', () => {
             expect(beforeCopySpy).toHaveBeenCalled();
         });
 
-        it('在复制后调用 afterCopy', async () => {
-            const afterCopySpy = vi.fn();
+        it('在复制后调用 onCopied', async () => {
+            const onCopiedSpy = vi.fn();
             const items = createTestItems(2);
             const wrapper = mountList({
                 lines: items,
-                afterCopy: afterCopySpy,
+                onCopied: onCopiedSpy,
             });
 
             await wrapper.trigger('keydown', {key: 'c', ctrlKey: true});
             await nextTick();
 
-            expect(afterCopySpy).toHaveBeenCalled();
+            expect(onCopiedSpy).toHaveBeenCalled();
         });
 
         it('beforeCopy 接收到深拷贝的数据', async () => {

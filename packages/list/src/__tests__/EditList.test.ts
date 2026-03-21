@@ -28,9 +28,9 @@ const mountList = (
         interactiveClassNames?: string[];
         jsonValidator?: (json: any, onError?: any) => boolean;
         beforeCopy?: (data: TestItem[]) => void;
-        afterCopy?: () => void;
+        onCopied?: () => void;
         beforePaste?: (data: TestItem[]) => void;
-        afterPaste?: () => void;
+        onPasted?: () => void;
     } = {},
     slots?: {
         line?: any;
@@ -52,9 +52,9 @@ const mountList = (
             interactiveClassNames: props.interactiveClassNames,
             jsonValidator: props.jsonValidator,
             beforeCopy: props.beforeCopy as any,
-            afterCopy: props.afterCopy,
+            onCopied: props.onCopied,
             beforePaste: props.beforePaste as any,
-            afterPaste: props.afterPaste,
+            onPasted: props.onPasted,
         },
         slots: defaultSlots,
         attachTo: document.body,
@@ -484,18 +484,18 @@ describe('EditList 组件', () => {
             expect(beforeCopySpy).toHaveBeenCalled();
         });
 
-        it('在复制后调用 afterCopy', async () => {
-            const afterCopySpy = vi.fn();
+        it('在复制后调用 onCopied', async () => {
+            const onCopiedSpy = vi.fn();
             const items = createTestItems(2);
             const wrapper = mountList({
                 lines: items,
-                afterCopy: afterCopySpy,
+                onCopied: onCopiedSpy,
             });
 
             await wrapper.trigger('keydown', {key: 'c', ctrlKey: true});
             await nextTick();
 
-            expect(afterCopySpy).toHaveBeenCalled();
+            expect(onCopiedSpy).toHaveBeenCalled();
         });
 
         it('beforeCopy 接收到深拷贝的数据', async () => {
@@ -586,14 +586,14 @@ describe('EditList 组件', () => {
             expect(beforePasteSpy).toHaveBeenCalled();
         });
 
-        it('在粘贴后调用 afterPaste', async () => {
-            const afterPasteSpy = vi.fn();
+        it('在粘贴后调用 onPasted', async () => {
+            const onPastedSpy = vi.fn();
             const validator = vi.fn(() => true);
 
             const wrapper = mountList({
                 lines: [],
                 jsonValidator: validator,
-                afterPaste: afterPasteSpy,
+                onPasted: onPastedSpy,
             });
 
             const {readText} = await import('clipboard-polyfill');
@@ -602,7 +602,7 @@ describe('EditList 组件', () => {
             await wrapper.trigger('keydown', {key: 'v', ctrlKey: true});
             await nextTick();
 
-            expect(afterPasteSpy).toHaveBeenCalled();
+            expect(onPastedSpy).toHaveBeenCalled();
         });
     });
 

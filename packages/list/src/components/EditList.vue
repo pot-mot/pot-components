@@ -116,7 +116,7 @@ const handlePaste = async () => {
         if (
             pasteData.filter((item, index) => {
                 return jsonValidator(item, (e) => validateErrorsMap.set(index, e));
-            }).length === value.length
+            }).length === pasteData.length
         ) {
             props.beforePaste?.(pasteData);
             tempLines.splice(insertIndex, 0, ...pasteData);
