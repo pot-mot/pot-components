@@ -78,48 +78,49 @@ import '@potmot/list/es/index.css'
 ### EditList 简单使用示例
 
 ```vue
+
 <script setup lang="ts">
-  import {EditList} from '@potmot/list';
-  import {ref} from 'vue';
+    import {EditList} from '@potmot/list';
+    import {ref} from 'vue';
 
-  type EditListItem = {
-      id: string;
-      name: string;
-      age: number;
-  };
+    type EditListItem = {
+        id: string;
+        name: string;
+        age: number;
+    };
 
-  const editListData = ref<EditListItem[]>([]);
+    const editListData = ref<EditListItem[]>([]);
 
-  const nextId = ref(1);
-  const defaultEditListData = (): EditListItem => ({
-      id: `${nextId.value}`,
-      name: `New Name`,
-      age: 18,
-  });
+    const nextId = ref(1);
+    const defaultEditListData = (): EditListItem => ({
+        id: `${nextId.value}`,
+        name: `New Name`,
+        age: 18,
+    });
 
-  const handleCopied = (data: EditListItem[]) => {
-      alert(`复制了 ${data.map((it) => it.name).join(',')}`);
-  };
+    const handleCopied = (data: EditListItem[]) => {
+        alert(`复制了 ${data.map((it) => it.name).join(',')}`);
+    };
 
-  const validateItem = (item: any) => {
-      if (typeof item !== 'object') {
-          return false;
-      }
-      if (!item.id || !item.name || !item.age) {
-          return false;
-      }
-      return !(
-          typeof item.id !== 'string' ||
-          typeof item.name !== 'string' ||
-          typeof item.age !== 'number'
-      );
-  };
+    const validateItem = (item: any) => {
+        if (typeof item !== 'object') {
+            return false;
+        }
+        if (!item.id || !item.name || !item.age) {
+            return false;
+        }
+        return !(
+            typeof item.id !== 'string' ||
+            typeof item.name !== 'string' ||
+            typeof item.age !== 'number'
+        );
+    };
 
-  const beforePaste = (items: EditListItem[]) => {
-      for (const item of items) {
-          item.id = `${nextId.value++}`;
-      }
-  };
+    const beforePaste = (items: EditListItem[]) => {
+        for (const item of items) {
+            item.id = `${nextId.value++}`;
+        }
+    };
 </script>
 
 <template>
@@ -141,40 +142,42 @@ import '@potmot/list/es/index.css'
     </EditList>
 </template>
 ```
+
 ### ViewList 简单使用示例
 
 ```vue
+
 <script setup lang="ts">
-import {ViewList} from '@potmot/list';
-import {ref} from 'vue';
+    import {ViewList} from '@potmot/list';
+    import {ref} from 'vue';
 
-type ViewListItem = {
-    id: string;
-    name: string;
-    age: number;
-};
+    type ViewListItem = {
+        id: string;
+        name: string;
+        age: number;
+    };
 
-const viewListData = ref<ViewListItem[]>([
-    {
-        id: '1',
-        name: 'Jack',
-        age: 18,
-    },
-    {
-        id: '2',
-        name: 'Rose',
-        age: 19,
-    },
-    {
-        id: '3',
-        name: 'Mary',
-        age: 20,
-    },
-]);
+    const viewListData = ref<ViewListItem[]>([
+        {
+            id: '1',
+            name: 'Jack',
+            age: 18,
+        },
+        {
+            id: '2',
+            name: 'Rose',
+            age: 19,
+        },
+        {
+            id: '3',
+            name: 'Mary',
+            age: 20,
+        },
+    ]);
 
-const handleCopied = (data: ViewListItem[]) => {
-    alert(`复制了 ${data.map((it) => it.name).join(',')}`);
-};
+    const handleCopied = (data: ViewListItem[]) => {
+        alert(`复制了 ${data.map((it) => it.name).join(',')}`);
+    };
 </script>
 
 <template>
@@ -210,25 +213,26 @@ const handleCopied = (data: ViewListItem[]) => {
 
 ### ViewList Props
 
-| 属性                    | 类型                                   | 必填 | 说明                  |
-|-----------------------|--------------------------------------|----|---------------------|
-| lines                 | `T[]`                                | ✅  | 列表数据                |
-| toKey                 | `(line: T, index: number) => string` | ✅  | 生成唯一键的函数            |
+| 属性               | 类型                                   | 必填 | 说明                  |
+|------------------|--------------------------------------|----|---------------------|
+| lines            | `T[]`                                | ✅  | 列表数据                |
+| toKey            | `(line: T, index: number) => string` | ✅  | 生成唯一键的函数            |
 | ignoreClassNames | `string[]`                           | ❌  | 交互式元素的类名列表          |
-| beforeCopy            | `(data: T[]) => void`                | ❌  | 复制前回调，可以在复制前对数据进行处理 |
+| beforeCopy       | `(data: T[]) => void`                | ❌  | 复制前回调，可以在复制前对数据进行处理 |
 
 ### EditList Events
 
-| 事件名         | 参数                                        | 说明        |
-|-------------|-------------------------------------------|-----------|
-| click-item  | `(e: MouseEvent, item: T, index: number)` | 点击列表项时触发  |
-| selected    | `(item: T, index: number)`                | 选中项时触发    |
-| unselected  | `(item: T, index: number)`                | 取消选中时触发   |
-| added       | `(added: T[])`                            | 添加项时触发    |
-| deleted     | `(deleted: T[])`                          | 删除项时触发    |
-| copied      | `(copied: T[])`                           | 复制成功时触发   |
-| pasted      | `(pasted: T[])`                           | 粘贴成功时触发   |
-| paste-error | `(error: Map<number, any> \| any)`        | 粘贴验证失败时触发 |
+| 事件名          | 参数                                        | 说明       |
+|--------------|-------------------------------------------|----------|
+| click-item   | `(e: MouseEvent, item: T, index: number)` | 点击列表项时触发 |
+| selected     | `(item: T, index: number)`                | 选中项时触发   |
+| unselected   | `(item: T, index: number)`                | 取消选中时触发  |
+| added        | `(added: T[])`                            | 添加项时触发   |
+| deleted      | `(deleted: T[])`                          | 删除项时触发   |
+| copied       | `(copied: T[])`                           | 复制成功时触发  |
+| copy-failed  | `(error: any)`                            | 复制失败时触发  |
+| pasted       | `(pasted: T[])`                           | 粘贴成功时触发  |
+| paste-failed | `(error: any)`                            | 粘贴失败时触发  |
 
 ### ViewList Events
 
@@ -238,6 +242,7 @@ const handleCopied = (data: ViewListItem[]) => {
 | selected   | `(item: T, index: number)`                | 选中项时触发   |
 | unselected | `(item: T, index: number)`                | 取消选中时触发  |
 | copied     | `(copied: T[])`                           | 复制成功时触发  |
+| copy-failed  | `(error: any)`                            | 复制失败时触发  |
 
 ### Slots
 
@@ -292,6 +297,22 @@ const handleCopied = (data: ViewListItem[]) => {
 | unselectAll         | `() => void`                             | 取消全部选中   |
 | resetSelection      | `(indexes: number[]) => void`            | 重置选中状态   |
 | resetSelectionRange | `(start: number, end: number) => void`   | 重置为范围选中  |
+
+### ListGlobalConfig
+
+列表组件库的全局配置对象，用于设置默认的行为和处理程序。可以在应用级别进行配置以影响所有列表组件的默认行为。
+
+#### 配置项
+
+| 属性                  | 类型                                             | 默认值                                                               | 说明                          |
+|---------------------|------------------------------------------------|-------------------------------------------------------------------|-----------------------------|
+| ignoreClassNames    | `string[]`                                     | `[]`                                                              | 交互式元素的类名列表，这些元素不会触发列表项的选择操作 |
+| copySuccessHandler  | `((data: any[]) => void) \| null \| undefined` | `null`                                                            | 复制成功时的全局回调函数，接收复制的数据数组作为参数  |
+| copyFailedHandler   | `((error: any) => void) \| null \| undefined`  | `(error: any) => { console.error('List copy failed.', error); }`  | 复制失败时的全局回调函数，接收错误信息作为参数     |
+| pasteSuccessHandler | `((data: any[]) => void) \| null \| undefined` | `null`                                                            | 粘贴成功时的全局回调函数，接收粘贴的数据数组作为参数  |
+| pasteFailedHandler  | `((error: any) => void) \| null \| undefined`  | `(error: any) => { console.error('List paste failed.', error); }` | 粘贴失败时的全局回调函数，接收错误信息作为参数     |
+
+#### 使用示例
 
 ## License
 

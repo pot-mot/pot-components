@@ -62,7 +62,7 @@ const handlePasted = (data: EditListItem[]) => {
     alert(`粘贴了 ${data.map((it) => it.name).join(',')}`);
 };
 
-const handlePasteError = (error: any) => {
+const handlePasteFailed = (error: any) => {
     alert('粘贴错误：' + error);
 };
 </script>
@@ -80,7 +80,7 @@ const handlePasteError = (error: any) => {
                 :pasteValidator="validateItem"
                 :before-paste="beforePaste"
                 @pasted="handlePasted"
-                @paste-error="handlePasteError"
+                @paste-failed="handlePasteFailed"
             >
                 <template #line="{item}">
                     <div class="line-item">

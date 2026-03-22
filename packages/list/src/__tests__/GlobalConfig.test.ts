@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
+import { describe, it, expect, vi, afterEach} from 'vitest';
 import { GlobalConfig } from '@/components/GlobalConfig';
 import {cloneDeep} from 'lodash-es';
 import {mountEditList, mountViewList} from '@/__tests__/mountComponent.ts';
@@ -21,14 +21,14 @@ describe('GlobalConfig', () => {
         });
     });
 
-    describe('pasteErrorHandler', () => {
+    describe('pasteFailedHandler', () => {
         it('should log error to console', () => {
             const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
             const error = new Error('Test paste error');
 
-            GlobalConfig.pasteErrorHandler(error);
+            GlobalConfig.pasteFailedHandler?.(error);
             
-            expect(consoleSpy).toHaveBeenCalledWith('List paste error.', error);
+            expect(consoleSpy).toHaveBeenCalledWith('List paste failed.', error);
             consoleSpy.mockRestore();
         });
 
@@ -36,9 +36,9 @@ describe('GlobalConfig', () => {
             const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
             const errorMap = new Map([[0, [new Error('Invalid field')]]]);
             
-            GlobalConfig.pasteErrorHandler(errorMap);
+            GlobalConfig.pasteFailedHandler?.(errorMap);
             
-            expect(consoleSpy).toHaveBeenCalledWith('List paste error.', errorMap);
+            expect(consoleSpy).toHaveBeenCalledWith('List paste failed.', errorMap);
             consoleSpy.mockRestore();
         });
     });

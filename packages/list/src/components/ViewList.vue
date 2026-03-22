@@ -27,15 +27,13 @@ const emit = defineEmits<{
     selected: [item: T, index: number];
     unselected: [item: T, index: number];
     copied: [items: T[]];
+    copyFailed: [error: any];
 }>();
 
 const listRef = useTemplateRef<HTMLDivElement>('listRef');
 const bodyRef = useTemplateRef<HTMLDivElement>('bodyRef');
 const focusList = () => {
-    if (
-        document.activeElement &&
-        isIgnoreElement(document.activeElement, props.ignoreClassNames)
-    )
+    if (document.activeElement && isIgnoreElement(document.activeElement, props.ignoreClassNames))
         return;
     listRef.value?.focus();
 };
@@ -80,6 +78,30 @@ useClickOutside(
         emit('clickOutside', e);
     },
 );
+
+const getSelectedItems = (): T[] => {
+    const selectedItems: T[] = [];
+    for (const [index, item] of props.lines.entries()) {
+        if (selectedSet.value.has(index)) {
+            selectedItems.push(item);
+        }
+    }
+    return selectedItems;
+};
+
+const handleCopy = async () => {
+    try {
+        const selectedItems: T[] = getSelectedItems();
+        const copyData = cloneDeep(toRaw(selectedItems));
+        props.beforeCopy?.(copyData);
+        await writeText(JSON.stringify(copyData));
+        GlobalConfig.copySuccessHandler?.(copyData);
+        emit('copied', copyData);
+    } catch (e) {
+        GlobalConfig.copyFailedHandler?.(e);
+        emit('copyFailed', e);
+    }
+};
 
 // 向上扩充选中区间
 const expandSelectionUpward = () => {
@@ -151,14 +173,6 @@ const handleKeyboardEvent = async (e: KeyboardEvent) => {
         return;
     }
 
-    const selectedItems: T[] = [];
-
-    for (const [index, item] of props.lines.entries()) {
-        if (selectedSet.value.has(index)) {
-            selectedItems.push(item);
-        }
-    }
-
     if (e.key === 'ArrowUp') {
         prepareKeyboardEvent(e);
 
@@ -182,11 +196,7 @@ const handleKeyboardEvent = async (e: KeyboardEvent) => {
             resetSelection(Array.from(props.lines.keys()));
         } else if (e.key === 'c') {
             prepareKeyboardEvent(e);
-
-            const copyData = cloneDeep(toRaw(selectedItems));
-            props.beforeCopy?.(copyData);
-            await writeText(JSON.stringify(copyData));
-            emit('copied', copyData);
+            await handleCopy();
         }
     }
 };

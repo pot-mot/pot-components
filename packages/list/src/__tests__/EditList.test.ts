@@ -306,7 +306,7 @@ describe('EditList 组件', () => {
             expect((wrapper.emitted('deleted')![0][0] as TestItem[])[0]).toStrictEqual(items[1]);
         });
 
-        it('在粘贴错误时触发 pasteError 事件', async () => {
+        it('在粘贴错误时触发 pasteFailed 事件', async () => {
             const validator = vi.fn(() => false);
             const wrapper = mountList({
                 lines: [],
@@ -321,7 +321,7 @@ describe('EditList 组件', () => {
             await wrapper.trigger('keydown', {key: 'v', ctrlKey: true});
             await nextTick();
 
-            expect(wrapper.emitted('pasteError')).toBeDefined();
+            expect(wrapper.emitted('pasteFailed')).toBeDefined();
             consoleSpy.mockRestore();
         });
     });
@@ -844,8 +844,8 @@ describe('EditList 组件', () => {
             await wrapper.trigger('keydown', {key: 'v', ctrlKey: true});
             await nextTick();
 
-            // 触发 pasteError 事件
-            expect(wrapper.emitted('pasteError')).toBeDefined();
+            // 触发 pasteFailed 事件
+            expect(wrapper.emitted('pasteFailed')).toBeDefined();
             // 列表不变化
             expect(wrapper.findAll('.line-wrapper').length).toBe(2);
             consoleSpy.mockRestore();
@@ -874,8 +874,8 @@ describe('EditList 组件', () => {
             await wrapper.trigger('keydown', {key: 'v', ctrlKey: true});
             await nextTick();
 
-            // 触发 pasteError 事件
-            expect(wrapper.emitted('pasteError')).toBeDefined();
+            // 触发 pasteFailed 事件
+            expect(wrapper.emitted('pasteFailed')).toBeDefined();
             // 列表不变化
             expect(wrapper.findAll('.line-wrapper').length).toBe(2);
             consoleSpy.mockRestore();

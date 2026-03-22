@@ -34,10 +34,11 @@ const emit = defineEmits<{
     selected: [item: T, index: number];
     unselected: [item: T, index: number];
     copied: [items: T[]];
+    copyFailed: [error: any];
     pasted: [items: T[]];
+    pasteFailed: [error: any];
     added: [added: T[]];
     deleted: [deleted: T[]];
-    pasteError: [error: Map<number, any> | any];
 }>();
 
 const listRef = useTemplateRef<HTMLDivElement>('listRef');
@@ -91,6 +92,40 @@ useClickOutside(
     },
 );
 
+const getSelectedItems = (): T[] => {
+    const selectedItems: T[] = [];
+    for (const [index, item] of lines.value.entries()) {
+        if (selectedSet.value.has(index)) {
+            selectedItems.push(item);
+        }
+    }
+    return selectedItems;
+};
+
+const getUnselectedItems = (): T[] => {
+    const unselectedItems: T[] = [];
+    for (const [index, item] of lines.value.entries()) {
+        if (!selectedSet.value.has(index)) {
+            unselectedItems.push(item);
+        }
+    }
+    return unselectedItems;
+};
+
+const handleCopy = async () => {
+    try {
+        const selectedItems: T[] = getSelectedItems();
+        const copyData = cloneDeep(toRaw(selectedItems));
+        props.beforeCopy?.(copyData);
+        await writeText(JSON.stringify(copyData));
+        GlobalConfig.copySuccessHandler?.(copyData);
+        emit('copied', copyData);
+    } catch (e) {
+        GlobalConfig.copyFailedHandler?.(e);
+        emit('copyFailed', e);
+    }
+};
+
 const handlePaste = async () => {
     if (props.pasteValidator === undefined) return;
     const pasteValidator = props.pasteValidator;
@@ -119,8 +154,8 @@ const handlePaste = async () => {
             tempLines.splice(insertIndex, 0, ...pasteData);
             insertLength = pasteData.length;
         } else {
-            GlobalConfig.pasteErrorHandler(validateErrorsMap);
-            emit('pasteError', validateErrorsMap);
+            GlobalConfig.pasteFailedHandler?.(validateErrorsMap);
+            emit('pasteFailed', validateErrorsMap);
             return;
         }
 
@@ -132,11 +167,20 @@ const handlePaste = async () => {
         for (let i = insertIndex; i < insertIndex + insertLength; i++) {
             select(i);
         }
+        GlobalConfig.pasteSuccessHandler?.(pasteData);
         emit('pasted', pasteData);
     } catch (e) {
-        GlobalConfig.pasteErrorHandler(e);
-        emit('pasteError', e);
+        GlobalConfig.pasteFailedHandler?.(e);
+        emit('pasteFailed', e);
     }
+};
+
+const handleRemove = () => {
+    const selectedItems = getSelectedItems();
+    const unselectedItems = getUnselectedItems();
+    unselectAll();
+    lines.value = unselectedItems;
+    emit('deleted', selectedItems);
 };
 
 const getDefaultLine = async (): Promise<T> => {
@@ -318,19 +362,8 @@ const handleKeyboardEvent = async (e: KeyboardEvent) => {
         return;
     }
 
-    const selectedItems: T[] = [];
-    const unselectedItems: T[] = [];
-
-    for (const [index, item] of lines.value.entries()) {
-        if (selectedSet.value.has(index)) {
-            selectedItems.push(item);
-        } else {
-            unselectedItems.push(item);
-        }
-    }
-
     if (e.key === 'Enter') {
-        if (selectedItems.length === 1 && current.value !== undefined) {
+        if (indexSelection.selectedSet.value.size === 1 && current.value !== undefined) {
             prepareKeyboardEvent(e);
 
             const index = current.value;
@@ -340,9 +373,7 @@ const handleKeyboardEvent = async (e: KeyboardEvent) => {
     } else if (e.key === 'Delete' || e.key === 'Backspace') {
         prepareKeyboardEvent(e);
 
-        unselectAll();
-        lines.value = unselectedItems;
-        emit('deleted', selectedItems);
+        handleRemove();
     } else if (e.key === 'ArrowUp') {
         prepareKeyboardEvent(e);
 
@@ -371,24 +402,16 @@ const handleKeyboardEvent = async (e: KeyboardEvent) => {
         } else if (e.key === 'c') {
             prepareKeyboardEvent(e);
 
-            const copyData = cloneDeep(toRaw(selectedItems));
-            props.beforeCopy?.(copyData);
-            await writeText(JSON.stringify(copyData));
-            emit('copied', copyData);
-        } else if (e.key === 'x') {
-            prepareKeyboardEvent(e);
-
-            const copyData = cloneDeep(toRaw(selectedItems));
-            props.beforeCopy?.(copyData);
-            await writeText(JSON.stringify(copyData));
-            emit('copied', copyData);
-            unselectAll();
-            lines.value = unselectedItems;
-            emit('deleted', selectedItems);
+            await handleCopy();
         } else if (e.key === 'v') {
             prepareKeyboardEvent(e);
 
             await handlePaste();
+        } else if (e.key === 'x') {
+            prepareKeyboardEvent(e);
+
+            await handleCopy();
+            handleRemove();
         }
     }
 };

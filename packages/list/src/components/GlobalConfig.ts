@@ -1,9 +1,17 @@
 export const GlobalConfig: {
     ignoreClassNames: string[];
-    pasteErrorHandler: (error: Map<number, Error[] | null | undefined> | unknown) => void;
+    copySuccessHandler: ((data: any[]) => void) | null | undefined;
+    copyFailedHandler: ((error: any) => void) | null | undefined;
+    pasteSuccessHandler: ((data: any[]) => void) | null | undefined;
+    pasteFailedHandler: ((error: any) => void) | null | undefined;
 } = {
     ignoreClassNames: [],
-    pasteErrorHandler: (error: Map<number, Error[] | null | undefined> | unknown) => {
-        console.error('List paste error.', error);
+    copySuccessHandler: null,
+    copyFailedHandler: (error: any) => {
+        console.error('List copy failed.', error);
+    },
+    pasteSuccessHandler: null,
+    pasteFailedHandler: (error: any) => {
+        console.error('List paste failed.', error);
     },
 };
