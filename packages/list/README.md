@@ -19,7 +19,6 @@
     - `Arrow Up` / `Arrow Down` - 切换选中项
 - 🖱️ **鼠标交互** - 支持单选、多选、范围选择
 - 📋 **剪贴板支持** - 复制 JSON 格式数据
-- 🎯 **智能交互** - 自动识别交互式元素
 
 ### EditList 组件
 
@@ -207,7 +206,7 @@ import '@potmot/list/es/index.css'
 | defaultLine      | `T \| (() => T \| Promise<T>)`                           | ✅  | 默认新行数据或生成函数         |
 | toKey            | `(line: T, index: number) => string`                     | ✅  | 生成唯一键的函数            |
 | pasteValidator   | `(json: any, onError?: (error: any) => void) => boolean` | ❌  | 粘贴验证函数              |
-| ignoreClassNames | `string[]`                                               | ❌  | 交互式元素的类名列表          |
+| ignoreClassNames | `string[]`                                               | ❌  | 忽略的元素的类名列表          |
 | beforeCopy       | `(data: T[]) => void`                                    | ❌  | 复制前回调，可以在复制前对数据进行处理 |
 | beforePaste      | `(data: T[]) => void`                                    | ❌  | 粘贴前回调，可以在粘贴前对数据进行处理 |
 
@@ -217,7 +216,7 @@ import '@potmot/list/es/index.css'
 |------------------|--------------------------------------|----|---------------------|
 | lines            | `T[]`                                | ✅  | 列表数据                |
 | toKey            | `(line: T, index: number) => string` | ✅  | 生成唯一键的函数            |
-| ignoreClassNames | `string[]`                           | ❌  | 交互式元素的类名列表          |
+| ignoreClassNames | `string[]`                           | ❌  | 忽略的元素的类名列表          |
 | beforeCopy       | `(data: T[]) => void`                | ❌  | 复制前回调，可以在复制前对数据进行处理 |
 
 ### EditList Events
@@ -300,19 +299,36 @@ import '@potmot/list/es/index.css'
 
 ### ListGlobalConfig
 
-列表组件库的全局配置对象，用于设置默认的行为和处理程序。可以在应用级别进行配置以影响所有列表组件的默认行为。
+列表组件库的全局配置对象，用于设置默认的行为和处理程序。各个handler在组件prop和对应事件前触发。
 
 #### 配置项
 
 | 属性                  | 类型                                             | 默认值                                                               | 说明                          |
 |---------------------|------------------------------------------------|-------------------------------------------------------------------|-----------------------------|
-| ignoreClassNames    | `string[]`                                     | `[]`                                                              | 交互式元素的类名列表，这些元素不会触发列表项的选择操作 |
+| ignoreClassNames    | `string[]`                                     | `[]`                                                              | 忽略的元素的类名列表，这些元素不会触发列表项的选择操作 |
 | copySuccessHandler  | `((data: any[]) => void) \| null \| undefined` | `null`                                                            | 复制成功时的全局回调函数，接收复制的数据数组作为参数  |
 | copyFailedHandler   | `((error: any) => void) \| null \| undefined`  | `(error: any) => { console.error('List copy failed.', error); }`  | 复制失败时的全局回调函数，接收错误信息作为参数     |
 | pasteSuccessHandler | `((data: any[]) => void) \| null \| undefined` | `null`                                                            | 粘贴成功时的全局回调函数，接收粘贴的数据数组作为参数  |
 | pasteFailedHandler  | `((error: any) => void) \| null \| undefined`  | `(error: any) => { console.error('List paste failed.', error); }` | 粘贴失败时的全局回调函数，接收错误信息作为参数     |
 
 #### 使用示例
+
+```typescript
+import {ListGlobalConfig} from '@potmot/list';
+
+ListGlobalConfig.copySuccessHandler = () => {
+    alert("复制成功");
+};
+ListGlobalConfig.copyFailedHandler = (error) => {
+    alert("复制失败");
+};
+ListGlobalConfig.pasteSuccessHandler = () => {
+    alert("粘贴成功");
+};
+ListGlobalConfig.pasteFailedHandler = (error) => {
+    alert("粘贴失败");
+};
+```
 
 ## License
 
